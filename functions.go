@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -37,4 +40,19 @@ func MemberHasPermission(s *discordgo.Session, guildID string, userID string, pe
 	}
 
 	return false, nil
+}
+
+// TimeFormatFr : Transforme un time.Time en date formatée pour le FR
+func TimeFormatFr(time time.Time) string {
+	return time.Format("02/01/2006 15h04m05")
+}
+
+// TimestampToDate : Renvoie la date correspondant au timestamp
+func TimestampToDate(nano int64) string {
+	return TimeFormatFr(time.Unix(0, nano))
+}
+
+// Log : Printf mais formaté pour la console
+func Log(tag string, msg string, a ...interface{}) {
+	fmt.Printf("[%s] | [%s] %s", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
 }

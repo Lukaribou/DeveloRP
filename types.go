@@ -2,7 +2,6 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
@@ -74,5 +73,5 @@ func (ch *CommandHandler) AddCommand(name string,
 		aliases = make([]string, 0)
 	}
 	ch.Commands = append(ch.Commands, Command{name, aliases, description, guildAdminsOnly, ownerOnly, execute})
-	fmt.Printf("[Système] Commande \"%s\" chargée.\n", name)
+	Log("Système", "Commande \"%s\" chargée.\n", name)
 }
