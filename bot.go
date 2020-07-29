@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"strconv"
 	"strings"
 	"syscall"
 
@@ -15,12 +14,13 @@ import (
 )
 
 var (
-	config Config
+	// Config : La config du bot
+	Config ConfigStruct
 )
 
 func main() {
-	config := readConfig()
-	dg, err := discordgo.New("Bot " + config.Token)
+	readConfig()
+	dg, err := discordgo.New("Bot " + Config.Token)
 	if err != nil {
 		log.Fatal("Erreur lors de la création du client")
 	}
@@ -46,19 +46,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if c, _ := s.Channel(m.ChannelID); c.Type == discordgo.ChannelTypeDM || c.Type == discordgo.ChannelTypeGroupDM {
 		s.ChannelMessageSend(c.ID, "**Je ne prends pas en compte les commandes effectuées en MP.**")
 		return
-	} else if !strings.HasPrefix(m.Content, config.Prefix) {
+	} else if !strings.HasPrefix(m.Content, Config.Prefix) {
 		return
 	}
-	m.Content = m.Content[3:]
+	m.Content = m.Content[len(Config.Prefix):]
 
 	args := strings.Split(strings.ToLower(m.Content), " ")
-	cmd, err := config.CommandHandler.Get(args[0])
+	cmd, err := Config.CommandHandler.Get(args[0])
 	if err != nil {
 		s.ChannelMessageSend(m.ChannelID, "**La commande `"+args[0]+"` m'est inconnue.**")
 		return
 	}
 
-	if cmd.OwnerOnly && config.OwnerID != m.Author.ID {
+	if cmd.OwnerOnly && Config.OwnerID != m.Author.ID {
 		s.ChannelMessageSend(m.ChannelID, "**Cette commande est limitée au propriétaire du bot.**")
 		return
 	} else if p, _ := MemberHasPermission(s, m.GuildID, m.Author.ID, discordgo.PermissionAdministrator); cmd.GuildAdminsOnly && !p {
@@ -70,19 +70,17 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "**Une erreur est survenue.**")
 		return
 	}
-	c, _ := strconv.Atoi(m.ChannelID)
 
-	cmd.Execute(Context{g, g.Channels[c], m.Member, m, s, args})
+	if c, err := s.Channel(m.ChannelID); err == nil {
+		go cmd.Execute(Context{g, c, m.Member, m, s, args})
+	}
 }
 
-func registerCommands() []Command {
-	var cmds []Command
-	cmds = append(cmds, Command{"ping", []string{}, "Réponds par pong si le bot est en ligne", false, false, pingCommand})
-
-	return cmds
+func registerCommands(c *CommandHandler) {
+	c.AddCommand("ping", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
 }
 
-func readConfig() Config {
+func readConfig() {
 	jsonF, err := os.Open("data/config.json")
 
 	if err != nil {
@@ -91,10 +89,7 @@ func readConfig() Config {
 	defer jsonF.Close()
 
 	byteVal, _ := ioutil.ReadAll(jsonF)
+	json.Unmarshal(byteVal, &Config)
 
-	var cfg Config
-	json.Unmarshal(byteVal, &cfg)
-	cfg.CommandHandler = CommandHandler{registerCommands()}
-
-	return cfg
+	registerCommands(&Config.CommandHandler)
 }

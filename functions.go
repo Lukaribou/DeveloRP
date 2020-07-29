@@ -1,6 +1,8 @@
 package main
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"github.com/bwmarrin/discordgo"
+)
 
 // ArrIncludes : Indique si un tableau contient une certaine chaine
 func ArrIncludes(arr []string, str string) bool {

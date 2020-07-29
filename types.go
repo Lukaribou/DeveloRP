@@ -2,13 +2,14 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-// Config : Contenu de config.json + compléments
-type Config struct {
+// ConfigStruct : Contenu de config.json + compléments
+type ConfigStruct struct {
 	Token          string
 	OwnerID        string
 	GitHubLink     string
@@ -60,4 +61,18 @@ func (ch *CommandHandler) Get(name string) (Command, error) {
 		}
 	}
 	return Command{}, errors.New("Command not found")
+}
+
+// AddCommand : Ajoute une commande au CommandHandler
+func (ch *CommandHandler) AddCommand(name string,
+	aliases []string,
+	description string,
+	execute func(Context) error,
+	guildAdminsOnly bool,
+	ownerOnly bool) {
+	if aliases == nil {
+		aliases = make([]string, 0)
+	}
+	ch.Commands = append(ch.Commands, Command{name, aliases, description, guildAdminsOnly, ownerOnly, execute})
+	fmt.Printf("[Commande chargée]: %s\n", name)
 }
