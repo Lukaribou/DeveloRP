@@ -70,7 +70,7 @@ func (ch *CommandHandler) AddCommand(name string,
 	guildAdminsOnly bool,
 	ownerOnly bool) {
 	if aliases == nil {
-		aliases = make([]string, 0)
+		aliases = []string{}
 	}
 	ch.Commands = append(ch.Commands, Command{name, aliases, description, guildAdminsOnly, ownerOnly, execute})
 	Log("Système", "Commande \"%s\" chargée.\n", name)
