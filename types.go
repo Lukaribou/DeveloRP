@@ -44,7 +44,7 @@ type Command struct {
 	Description     string
 	GuildAdminsOnly bool
 	OwnerOnly       bool
-	Execute         func(Context) error
+	Execute         func(Context)
 }
 
 // CommandHandler : ...
@@ -67,12 +67,12 @@ func (ch *CommandHandler) Get(name string) (Command, error) {
 func (ch *CommandHandler) AddCommand(name string,
 	aliases []string,
 	description string,
-	execute func(Context) error,
+	execute func(Context),
 	guildAdminsOnly bool,
 	ownerOnly bool) {
 	if aliases == nil {
 		aliases = make([]string, 0)
 	}
 	ch.Commands = append(ch.Commands, Command{name, aliases, description, guildAdminsOnly, ownerOnly, execute})
-	fmt.Printf("[Commande chargée]: %s\n", name)
+	fmt.Printf("[Système] Commande \"%s\" chargée.\n", name)
 }

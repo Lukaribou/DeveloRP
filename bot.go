@@ -33,7 +33,7 @@ func main() {
 	}
 	defer dg.Close()
 
-	fmt.Println("Bot connecté !")
+	fmt.Printf("[Système] Bot en ligne sur %d serveurs sous le nom de %s.\n", len(dg.State.Guilds), dg.State.User.Username)
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
