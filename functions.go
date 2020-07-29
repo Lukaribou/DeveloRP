@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -55,4 +56,9 @@ func TimestampToDate(nano int64) string {
 // Log : Printf mais formaté pour la console
 func Log(tag string, msg string, a ...interface{}) {
 	fmt.Printf("[%s] | [%s] %s", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
+}
+
+// InPercentLuck : ...
+func InPercentLuck(i int) bool {
+	return i < rand.Intn(101) // (rand.Intn(max - min + 1) + min)
 }

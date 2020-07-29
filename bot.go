@@ -4,10 +4,12 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -31,6 +33,8 @@ func main() {
 		log.Fatal("Erreur lors de l'ouverture de la connection")
 	}
 	defer dg.Close()
+
+	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
 
 	Log("Système", "Bot en ligne sur %d serveurs sous le nom de %s.\n", len(dg.State.Guilds), dg.State.User.Username)
 
