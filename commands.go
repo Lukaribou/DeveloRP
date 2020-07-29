@@ -1,6 +1,10 @@
 package main
 
-import "github.com/bwmarrin/discordgo"
+import (
+	"fmt"
+
+	"github.com/bwmarrin/discordgo"
+)
 
 func pingCommand(ctx Context) {
 	ctx.Reply("Pong !")
@@ -12,8 +16,7 @@ func helpCommand(ctx Context) {
 		fields = append(fields, &discordgo.MessageEmbedField{
 			Name:   c.Name,
 			Value:  c.Description,
-			Inline: true,
-		})
+			Inline: true})
 	}
 
 	em := &discordgo.MessageEmbed{
@@ -21,7 +24,13 @@ func helpCommand(ctx Context) {
 			Name:    ctx.Session.State.User.Username + " - Page d'aide",
 			IconURL: ctx.Session.State.User.AvatarURL(""),
 			URL:     Config.GitHubLink},
-		Fields: fields,
+		Fields: fields}
+
+	if owner, err := ctx.Session.User(Config.OwnerID); err == nil {
+		em.Footer = &discordgo.MessageEmbedFooter{
+			Text:    fmt.Sprintf("Prefix: %s | ©%s (%s)", Config.Prefix, owner.Username, Config.OwnerID),
+			IconURL: owner.AvatarURL("")}
 	}
+
 	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 }
