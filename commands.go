@@ -28,7 +28,7 @@ func helpCommand(ctx Context) {
 
 	if owner, err := ctx.Session.User(Config.OwnerID); err == nil {
 		em.Footer = &discordgo.MessageEmbedFooter{
-			Text:    fmt.Sprintf("Prefix: %s | ©%s (%s)", Config.Prefix, owner.Username, Config.OwnerID),
+			Text:    fmt.Sprintf("Prefix: %s | ©%s (%s)", Config.Prefix, owner.Username+owner.Discriminator, Config.OwnerID),
 			IconURL: owner.AvatarURL("")}
 	}
 
