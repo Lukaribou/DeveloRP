@@ -40,7 +40,6 @@ func (c *Context) Reply(msg string) (*discordgo.Message, error) {
 // Command : Structure d'une commande
 type Command struct {
 	Name            string
-	Category        string
 	Aliases         []string
 	Description     string
 	GuildAdminsOnly bool
@@ -66,7 +65,6 @@ func (ch *CommandHandler) Get(name string) (Command, error) {
 
 // AddCommand : Ajoute une commande au CommandHandler
 func (ch *CommandHandler) AddCommand(name string,
-	category string,
 	aliases []string,
 	description string,
 	execute func(Context),
@@ -75,6 +73,6 @@ func (ch *CommandHandler) AddCommand(name string,
 	if aliases == nil {
 		aliases = make([]string, 0)
 	}
-	ch.Commands = append(ch.Commands, Command{name, category, aliases, description, guildAdminsOnly, ownerOnly, execute})
+	ch.Commands = append(ch.Commands, Command{name, aliases, description, guildAdminsOnly, ownerOnly, execute})
 	fmt.Printf("[Système] Commande \"%s\" chargée.\n", name)
 }

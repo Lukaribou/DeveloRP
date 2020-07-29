@@ -77,8 +77,8 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func registerCommands(c *CommandHandler) {
-	c.AddCommand("ping", "Système", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
-	c.AddCommand("help", "Informations", nil, "Affiche la liste des commandes", helpCommand, false, false)
+	c.AddCommand("ping", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
+	c.AddCommand("help", nil, "Affiche la liste des commandes", helpCommand, false, false)
 }
 
 func readConfig() {
