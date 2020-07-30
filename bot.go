@@ -54,7 +54,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if c, _ := s.Channel(m.ChannelID); c.Type == discordgo.ChannelTypeDM || c.Type == discordgo.ChannelTypeGroupDM {
 		s.ChannelMessageSend(c.ID, "**Je ne prends pas en compte les commandes effectuées en MP.\nSi vous le cherchez, mon prefix est `"+Config.Prefix+"`**")
 		return
-	} else if strings.TrimSpace(m.Content) == s.State.User.Mention() {
+	} else if strings.TrimSpace(m.Content) == "<@!"+s.State.User.ID+">" {
 		s.ChannelMessageSend(c.ID, "**Mon prefix est `"+Config.Prefix+"`**")
 		return
 	} else if !strings.HasPrefix(m.Content, Config.Prefix) {
