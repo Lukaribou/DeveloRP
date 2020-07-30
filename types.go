@@ -48,6 +48,8 @@ type Command struct {
 	Execute         func(Context)
 }
 
+// ***************
+
 // CommandHandler : ...
 type CommandHandler struct {
 	Commands []*Command
@@ -78,3 +80,5 @@ func (ch *CommandHandler) AddCommand(name string,
 	ch.Commands = append(ch.Commands, &Command{name, category, aliases, description, guildAdminsOnly, ownerOnly, execute})
 	Log("Système", "Commande \"%s\" chargée.\n", name)
 }
+
+// ***************
