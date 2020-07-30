@@ -78,7 +78,7 @@ func (ch *CommandHandler) AddCommand(name string,
 		aliases = []string{}
 	}
 	ch.Commands = append(ch.Commands, &Command{name, category, aliases, description, guildAdminsOnly, ownerOnly, execute})
-	Log("Système", "Commande \"%s\" chargée.\n", name)
+	Log("Système", "Commande \"%s\" chargée.", name)
 }
 
 // ***************
