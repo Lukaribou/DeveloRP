@@ -75,13 +75,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if c, err := s.Channel(m.ChannelID); err == nil {
-		go cmd.Execute(Context{g, c, m.Member, m, s, args})
+		go cmd.Execute(Context{g, c, m.Author, m.Member, m, s, args})
 	}
 }
 
 func registerCommands(c *CommandHandler) {
-	c.AddCommand("ping", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
-	c.AddCommand("help", nil, "Affiche la liste des commandes", helpCommand, false, false)
+	c.AddCommand("ping", "Système", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
+	c.AddCommand("help", "Informations", nil, "Affiche la liste des commandes", helpCommand, false, false)
 }
 
 func readConfig() {

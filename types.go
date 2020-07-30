@@ -23,6 +23,7 @@ type ConfigStruct struct {
 type Context struct {
 	Guild   *discordgo.Guild
 	Channel *discordgo.Channel
+	User    *discordgo.User
 	Member  *discordgo.Member
 	Message *discordgo.MessageCreate
 	Session *discordgo.Session
@@ -39,6 +40,7 @@ func (c *Context) Reply(msg string) (*discordgo.Message, error) {
 // Command : Structure d'une commande
 type Command struct {
 	Name            string
+	Category        string
 	Aliases         []string
 	Description     string
 	GuildAdminsOnly bool
@@ -48,22 +50,23 @@ type Command struct {
 
 // CommandHandler : ...
 type CommandHandler struct {
-	Commands []Command
+	Commands []*Command
 }
 
 // Get : Renvoie la commande si elle existe, une erreur sinon
-func (ch *CommandHandler) Get(name string) (Command, error) {
+func (ch *CommandHandler) Get(name string) (*Command, error) {
 	name = strings.ToLower(name)
 	for _, c := range ch.Commands {
 		if c.Name == name || ArrIncludes(c.Aliases, name) {
 			return c, nil
 		}
 	}
-	return Command{}, errors.New("Command not found")
+	return &Command{}, errors.New("Command not found")
 }
 
 // AddCommand : Ajoute une commande au CommandHandler
 func (ch *CommandHandler) AddCommand(name string,
+	category string,
 	aliases []string,
 	description string,
 	execute func(Context),
@@ -72,6 +75,6 @@ func (ch *CommandHandler) AddCommand(name string,
 	if aliases == nil {
 		aliases = []string{}
 	}
-	ch.Commands = append(ch.Commands, Command{name, aliases, description, guildAdminsOnly, ownerOnly, execute})
+	ch.Commands = append(ch.Commands, &Command{name, category, aliases, description, guildAdminsOnly, ownerOnly, execute})
 	Log("Système", "Commande \"%s\" chargée.\n", name)
 }

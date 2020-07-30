@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -61,4 +62,39 @@ func Log(tag string, msg string, a ...interface{}) {
 // InPercentLuck : ...
 func InPercentLuck(i int) bool {
 	return i < rand.Intn(101) // (rand.Intn(max - min + 1) + min)
+}
+
+// RandomInt : Génère un nombre aléatoire en min et max
+func RandomInt(min, max int) int {
+	return rand.Intn(max-min+1) + min
+}
+
+// Constantes des émojis
+const (
+	OKEMOJI        = "✅"
+	XEMOJI         = "❌"
+	WARNINGEMOJI   = "⚠"
+	RIGHTARROW     = "➡"
+	TADAEMOJI      = "🎉"
+	ADMINSEMOJI    = "🚔"
+	OWNERONLYEMOJI = "🔐"
+)
+
+// GetEmojiOkOrX : Renvoie l'émoji Check si la condition == true, sinon X
+func GetEmojiOkOrX(cond bool) string {
+	if cond {
+		return OKEMOJI
+	}
+	return XEMOJI
+}
+
+// RandomColor : Renvoie une couleur aléatoire en hexa
+func RandomColor() int {
+	l := []string{"A", "B", "C", "D", "E", "F", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"}
+	var s string
+	for i := 0; i < 6; i++ {
+		s = s + l[rand.Intn(16)]
+	}
+	r, _ := strconv.ParseInt(s, 16, 0)
+	return int(r)
 }
