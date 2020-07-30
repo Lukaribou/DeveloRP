@@ -56,7 +56,7 @@ func TimestampToDate(nano int64) string {
 
 // Log : Printf mais formaté pour la console
 func Log(tag string, msg string, a ...interface{}) {
-	fmt.Printf("[%s] | [%s] %s", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
+	fmt.Printf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
 }
 
 // InPercentLuck : ...
