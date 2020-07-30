@@ -26,6 +26,7 @@ func main() {
 		log.Fatal("Erreur lors de la création du client")
 	}
 
+	dg.AddHandler(ready)
 	dg.AddHandler(messageCreate)
 
 	err = dg.Open()
@@ -35,19 +36,26 @@ func main() {
 	defer dg.Close()
 
 	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
-
-	Log("Système", "Bot en ligne sur %d serveurs sous le nom de %s.\n", len(dg.State.Guilds), dg.State.User.Username)
+	Log("Système", "Générateur du paquet \"rand\" initialisé.")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 }
 
+func ready(s *discordgo.Session, e *discordgo.Ready) {
+	s.UpdateListeningStatus(Config.Prefix)
+	Log("Système", "Bot en ligne sur %d serveurs sous le nom de %s.", len(e.Guilds), e.User.Username)
+}
+
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Author.Bot {
 		return
 	} else if c, _ := s.Channel(m.ChannelID); c.Type == discordgo.ChannelTypeDM || c.Type == discordgo.ChannelTypeGroupDM {
-		s.ChannelMessageSend(c.ID, "**Je ne prends pas en compte les commandes effectuées en MP.**")
+		s.ChannelMessageSend(c.ID, "**Je ne prends pas en compte les commandes effectuées en MP.\nSi vous le cherchez, mon prefix est `"+Config.Prefix+"`**")
+		return
+	} else if strings.TrimSpace(m.Content) == s.State.User.Mention() {
+		s.ChannelMessageSend(c.ID, "**Mon prefix est `"+Config.Prefix+"`**")
 		return
 	} else if !strings.HasPrefix(m.Content, Config.Prefix) {
 		return
