@@ -7,7 +7,7 @@ import (
 )
 
 func pingCommand(ctx Context) {
-	ctx.Reply("Pong !")
+	ctx.Reply("T'as cru que t'allais avoir la latence ?\nhttps://tenor.com/view/ha-cheh-take-that-gif-14055512")
 }
 
 func helpCommand(ctx Context) {
