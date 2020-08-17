@@ -99,4 +99,7 @@ type Player struct {
 	money      int
 	level      int
 	createDate int64
+	lastCode   int64
 }
+
+// ***************
