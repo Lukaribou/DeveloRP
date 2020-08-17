@@ -14,6 +14,7 @@ type ConfigStruct struct {
 	GitHubLink     string
 	InviteLink     string
 	Prefix         string
+	DbPassword     string
 	CommandHandler CommandHandler
 }
 
@@ -27,12 +28,20 @@ type Context struct {
 	Member  *discordgo.Member
 	Message *discordgo.MessageCreate
 	Session *discordgo.Session
+	DB      *DB
 	Args    []string
 }
 
 // Reply : Envoie le texte donné dans le salon du message reçu
 func (c *Context) Reply(msg string) (*discordgo.Message, error) {
 	return c.Session.ChannelMessageSend(c.Channel.ID, msg)
+}
+
+// ReplyError : Envoie un embed avec l'erreur donnée
+func (c *Context) ReplyError(msg string) (*discordgo.Message, error) {
+	return c.Session.ChannelMessageSendEmbed(c.Channel.ID, &discordgo.MessageEmbed{
+		Color:       0xFF0000,
+		Description: XEMOJI + "**Erreur:**\n" + msg})
 }
 
 // ***************
@@ -78,7 +87,16 @@ func (ch *CommandHandler) AddCommand(name string,
 		aliases = []string{}
 	}
 	ch.Commands = append(ch.Commands, &Command{name, category, aliases, description, guildAdminsOnly, ownerOnly, execute})
-	Log("Système", "Commande \"%s\" chargée.", name)
+	Log("S", "Commande \"%s\" chargée.", name)
 }
 
 // ***************
+
+// Player : Représente un joueur dans la BDD
+type Player struct {
+	ID         string
+	userID     string
+	money      int
+	level      int
+	createDate int64
+}

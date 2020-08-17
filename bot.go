@@ -17,6 +17,8 @@ import (
 var (
 	// Config : La config du bot
 	Config ConfigStruct
+	// Database : ...
+	database *DB
 )
 
 func main() {
@@ -29,6 +31,9 @@ func main() {
 	dg.AddHandler(ready)
 	dg.AddHandler(messageCreate)
 
+	database = NewDB()
+	defer database.sql.Close()
+
 	err = dg.Open()
 	if err != nil {
 		log.Fatal("Erreur lors de l'ouverture de la connection")
@@ -36,7 +41,7 @@ func main() {
 	defer dg.Close()
 
 	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
-	Log("Système", "Générateur du paquet \"rand\" initialisé.")
+	Log("S", "Générateur du paquet \"rand\" initialisé.")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -45,7 +50,7 @@ func main() {
 
 func ready(s *discordgo.Session, e *discordgo.Ready) {
 	s.UpdateListeningStatus(Config.Prefix)
-	Log("Système", "Bot en ligne sur %d serveurs sous le nom de %s.", len(e.Guilds), e.User.Username)
+	Log("S", "Bot en ligne sur %d serveurs sous le nom de %s.", len(e.Guilds), e.User.Username)
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -83,13 +88,15 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if c, err := s.Channel(m.ChannelID); err == nil {
-		go cmd.Execute(Context{g, c, m.Author, m.Member, m, s, args})
+		go cmd.Execute(Context{g, c, m.Author, m.Member, m, s, database, args})
 	}
 }
 
 func registerCommands(c *CommandHandler) {
 	c.AddCommand("ping", "Système", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
 	c.AddCommand("help", "Informations", nil, "Affiche la liste des commandes", helpCommand, false, false)
+	c.AddCommand("create", "RolePlay", nil, "Crée le joueur dans la BDD", playerCreate, false, false)
+	c.AddCommand("display", "RolePlay", nil, "Affiche les infos sur l'id/la mention donnée", displayPlayer, false, false)
 }
 
 func readConfig() {

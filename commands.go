@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"strconv"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -51,4 +53,56 @@ func helpCommand(ctx Context) {
 		Title: OKEMOJI + " L'aide vous a été envoyée en MP",
 		Color: 0xFFFFFF,
 	})
+}
+
+func playerCreate(ctx Context) {
+	if ctx.DB.PlayerExist(ctx.User.ID) {
+		ctx.ReplyError("Vous possédez déjà un joueur.")
+		return
+	}
+
+	id, _ := strconv.Atoi(ctx.User.ID)
+	_, err := ctx.DB.sql.Exec("INSERT INTO users (userID, money, level, createDate) VALUES (?, '0', 1, ?)",
+		id, strconv.Itoa(int(time.Now().Unix())))
+	if err != nil {
+		ctx.ReplyError("Une erreur SQL est survenue.")
+		Log("Base de données | Erreur", "Erreur %s", err.Error())
+		return
+	}
+
+	ctx.Reply(OKEMOJI + " **Vous êtes maintenant enregistré(e) dans ma base de données.**")
+}
+
+func displayPlayer(ctx Context) {
+	var target *discordgo.User
+	if len(ctx.Args) == 2 {
+		if len(ctx.Message.Mentions) != 0 {
+			target = ctx.Message.Mentions[0]
+		} else {
+			u, err := ctx.Session.User(ctx.Args[1])
+			if err != nil {
+				ctx.ReplyError("L'id donné ne correspond à aucun de mes utilisateurs.")
+				return
+			}
+			target = u
+		}
+	} else {
+		target = ctx.User
+	}
+
+	player, err := ctx.DB.GetPlayer(target.ID)
+	if err != nil {
+		ctx.ReplyError(err.Error())
+		return
+	}
+
+	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, &discordgo.MessageEmbed{
+		Color:  0x00FF00,
+		Author: &discordgo.MessageEmbedAuthor{Name: "Informations sur " + target.Username, IconURL: target.AvatarURL("")},
+		Fields: []*discordgo.MessageEmbedField{
+			{Name: "Bits:", Value: strconv.Itoa(player.money), Inline: true},
+			{Name: "Niveau:", Value: strconv.Itoa(player.level), Inline: true}},
+		Footer: &discordgo.MessageEmbedFooter{Text: "BDD ID: " + player.ID},
+	})
+
 }
