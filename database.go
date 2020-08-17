@@ -51,7 +51,8 @@ func (db *DB) GetPlayer(userID string) (*Player, error) {
 		&pl.userID,
 		&pl.money,
 		&pl.money,
-		&pl.createDate)
+		&pl.createDate,
+		&pl.lastCode)
 
 	return &pl, nil
 }
