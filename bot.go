@@ -50,7 +50,7 @@ func main() {
 
 func ready(s *discordgo.Session, e *discordgo.Ready) {
 	s.UpdateListeningStatus(Config.Prefix)
-	Log("S", "Bot en ligne sur %d serveurs sous le nom de %s.", len(e.Guilds), e.User.Username)
+	Log("S", "Bot en ligne sur %d serveur(s) sous le nom de %s.", len(e.Guilds), e.User.Username)
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
