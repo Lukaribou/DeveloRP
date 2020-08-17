@@ -62,7 +62,7 @@ func playerCreate(ctx Context) {
 	}
 
 	id, _ := strconv.Atoi(ctx.User.ID)
-	_, err := ctx.DB.sql.Exec("INSERT INTO users (userID, money, level, createDate) VALUES (?, '0', 1, ?)",
+	_, err := ctx.DB.sql.Exec("INSERT INTO users (userID, money, level, createDate, lastPay) VALUES (?, '0', 1, ?, nil)",
 		id, strconv.Itoa(int(time.Now().Unix())))
 	if err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
@@ -96,13 +96,44 @@ func displayPlayer(ctx Context) {
 		return
 	}
 
-	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, &discordgo.MessageEmbed{
+	em := &discordgo.MessageEmbed{
 		Color:  0x00FF00,
 		Author: &discordgo.MessageEmbedAuthor{Name: "Informations sur " + target.Username, IconURL: target.AvatarURL("")},
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Bits:", Value: strconv.Itoa(player.money), Inline: true},
-			{Name: "Niveau:", Value: strconv.Itoa(player.level), Inline: true}},
-		Footer: &discordgo.MessageEmbedFooter{Text: "BDD ID: " + player.ID},
-	})
+			{Name: "Niveau:", Value: strconv.Itoa(player.level), Inline: true},
+			{Name: "Date de création:", Value: TimestampSecToDate(player.createDate), Inline: true}},
+		Footer: &discordgo.MessageEmbedFooter{Text: "BDD ID: " + player.ID, IconURL: ctx.Session.State.User.AvatarURL("")},
+	}
 
+	if player.lastCode != 0 {
+		em.Fields = append(em.Fields, &discordgo.MessageEmbedField{Name: "Dernier code:", Value: TimestampSecToDate(player.lastCode), Inline: true})
+	}
+
+	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
+}
+
+func codeCommand(ctx Context) {
+	now := time.Now()
+	pl, err := ctx.DB.GetPlayer(ctx.User.ID)
+	if err != nil {
+		ctx.ReplyError("Vous ne possédez pas de joueur.")
+		return
+	}
+	last := time.Unix(pl.lastCode, 0)
+
+	if last.Add(6 * time.Hour).After(now) { // => Si ça fait moins de 6h
+		ctx.ReplyError("Vous devez attendre *" + TimeFormatFr(last.Add(6*time.Hour)) + "* avant la prochaine session de code.")
+		return
+	}
+
+	gain := 1 * pl.level
+
+	if err = ctx.DB.sql.QueryRow("UPDATE users SET lastPay = ?, money = ? WHERE ID = ?",
+		now.Unix(), pl.money+gain, pl.ID).Err(); err != nil {
+		ctx.ReplyError("Une erreur SQL est survenue.")
+		return
+	}
+
+	ctx.Reply(OKEMOJI + " **Votre session de code vous a fait gagner `" + strconv.Itoa(gain) + "` bits.**")
 }

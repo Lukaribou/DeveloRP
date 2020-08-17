@@ -97,6 +97,7 @@ func registerCommands(c *CommandHandler) {
 	c.AddCommand("help", "Informations", nil, "Affiche la liste des commandes", helpCommand, false, false)
 	c.AddCommand("create", "RolePlay", nil, "Crée le joueur dans la BDD", playerCreate, false, false)
 	c.AddCommand("display", "RolePlay", nil, "Affiche les infos sur l'id/la mention donnée", displayPlayer, false, false)
+	c.AddCommand("code", "RolePlay", nil, "Moyen de gagner des bits", codeCommand, false, false)
 }
 
 func readConfig() {
