@@ -49,8 +49,13 @@ func TimeFormatFr(time time.Time) string {
 	return time.Format("02/01/2006 15h04m05")
 }
 
-// TimestampToDate : Renvoie la date correspondant au timestamp
-func TimestampToDate(nano int64) string {
+// TimestampSecToDate : Renvoie la date correspondant au timestamp secondes
+func TimestampSecToDate(sec int64) string {
+	return TimeFormatFr(time.Unix(sec, 0))
+}
+
+// TimestampNanoToDate : Renvoie la date correspondant au timestamp nanos
+func TimestampNanoToDate(nano int64) string {
 	return TimeFormatFr(time.Unix(0, nano))
 }
 
