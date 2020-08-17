@@ -50,7 +50,7 @@ func (db *DB) GetPlayer(userID string) (*Player, error) {
 		&pl.ID,
 		&pl.userID,
 		&pl.money,
-		&pl.money,
+		&pl.level,
 		&pl.createDate,
 		&pl.lastCode)
 
