@@ -92,14 +92,47 @@ func (ch *CommandHandler) AddCommand(name string,
 
 // ***************
 
+// Les constantes des skills
+const (
+	HelloWorldSkill = 0x1
+	VariablesSkill  = 0x2
+	FunctionsSkill  = 0x4
+	ArraysSkill     = 0x8
+	TypesSkill      = 0
+	WebSkill        = 0
+	IOSkill         = 0
+	DatabasesSkill  = 0
+	SystemSkill     = 0
+	PointersSkill   = 0
+	ASMSkill        = 0
+)
+
 // Player : Représente un joueur dans la BDD
 type Player struct {
-	ID         string
-	userID     string
-	money      int
-	level      int
-	createDate int64
-	lastCode   int64
+	ID          int
+	userID      string
+	money       int
+	level       int
+	createDate  int64
+	lastCode    int64
+	curLangName string
+	skills      int
+}
+
+// HasSkill : Retourne true si le joueur a le skill
+// Même fonctionnement que permissions Discord
+func (pl *Player) HasSkill(code int) bool {
+	return pl.skills&code != 0
+}
+
+// ***************
+
+// Language : Représente un langage dans la BDD
+type Language struct {
+	ID     int
+	name   string
+	level  int
+	skills int
 }
 
 // ***************
