@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
@@ -66,7 +68,7 @@ func playerCreate(ctx Context) {
 		id, strconv.Itoa(int(time.Now().Unix())))
 	if err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
-		Log("Base de données | Erreur", "Erreur %s", err.Error())
+		Log("BDD Err", "Erreur %s", err.Error())
 		return
 	}
 
@@ -103,7 +105,7 @@ func displayPlayer(ctx Context) {
 			{Name: "Bits:", Value: strconv.Itoa(player.money), Inline: true},
 			{Name: "Niveau:", Value: strconv.Itoa(player.level), Inline: true},
 			{Name: "Date de création:", Value: TimestampSecToDate(player.createDate), Inline: true}},
-		Footer: &discordgo.MessageEmbedFooter{Text: "BDD ID: " + player.ID, IconURL: ctx.Session.State.User.AvatarURL("")},
+		Footer: &discordgo.MessageEmbedFooter{Text: "BDD ID: " + strconv.Itoa(player.ID), IconURL: ctx.Session.State.User.AvatarURL("")},
 	}
 
 	if player.lastCode != 0 {
@@ -129,11 +131,48 @@ func codeCommand(ctx Context) {
 
 	gain := 1 * pl.level
 
-	if err = ctx.DB.sql.QueryRow("UPDATE users SET lastPay = ?, money = ? WHERE ID = ?",
-		now.Unix(), pl.money+gain, pl.ID).Err(); err != nil {
+	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastPay = ?, money = ? WHERE ID = ?",
+		now.Unix(), pl.money+gain, pl.ID); err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
 		return
 	}
 
 	ctx.Reply(OKEMOJI + " **Votre session de code vous a fait gagner `" + strconv.Itoa(gain) + "` bits.**")
+}
+
+func execSQLCommand(ctx Context) {
+	r, err := ctx.DB.sql.Exec(strings.Join(ctx.Args[1:], " "))
+	if err != nil {
+		ctx.ReplyError("Une erreur est survenue. J'envoie les détails en MP.")
+		if c, e := ctx.Session.UserChannelCreate(ctx.User.ID); e == nil {
+			ctx.Session.ChannelMessageSend(c.ID, "**Erreur dans `execSQLCommand()`:**\n```"+err.Error()+"```")
+		}
+		Log("BDD Err", err.Error())
+		return
+	}
+
+	msg := fmt.Sprintf("%s **BDD mise à jour avec succès.**\nCommande executée: `%s`", OKEMOJI, strings.Join(ctx.Args[1:], " "))
+	if ra, e := r.RowsAffected(); e == nil {
+		msg += fmt.Sprintf("\nColonnes affectées: `%d`", ra)
+	}
+	ctx.Session.ChannelMessageSend(ctx.Channel.ID, msg)
+}
+
+func shutdownCommand(ctx Context) {
+	ctx.Session.ChannelMessageSend(ctx.Channel.ID, OKEMOJI+" **Extinction du bot en cours...**")
+	Log("S", "Arrêt système demandé.")
+
+	errSC := ctx.Session.Close()
+	if errSC != nil {
+		Log("S Err", "Erreur pendant la fermeture de la session: %s.", errSC.Error())
+	}
+	errSQLC := ctx.DB.sql.Close()
+	if errSQLC != nil {
+		Log("BDD Err", "Erreur pendant la fermeture de la base de données: %s.", errSQLC.Error())
+	}
+
+	if errSC == nil && errSQLC == nil {
+		Log("S", "Bot arrêté sans problème.")
+	}
+	os.Exit(0)
 }
