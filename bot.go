@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
@@ -50,7 +51,7 @@ func main() {
 
 func ready(s *discordgo.Session, e *discordgo.Ready) {
 	s.UpdateListeningStatus(Config.Prefix)
-	Log("S", "Bot en ligne sur %d serveur(s) sous le nom de %s.", len(e.Guilds), e.User.Username)
+	Log("S", "Bot en ligne sur %d serveur(s) sous le nom de %s.\n", len(e.Guilds), e.User.Username)
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -62,28 +63,28 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if strings.TrimSpace(m.Content) == "<@!"+s.State.User.ID+">" {
 		s.ChannelMessageSend(c.ID, "**Mon prefix est `"+Config.Prefix+"`**")
 		return
-	} else if !strings.HasPrefix(m.Content, Config.Prefix) {
+	} else if !strings.HasPrefix(strings.ToLower(m.Content), Config.Prefix) {
 		return
 	}
 	m.Content = m.Content[len(Config.Prefix):]
 
-	args := strings.Split(strings.ToLower(m.Content), " ")
-	cmd, err := Config.CommandHandler.Get(args[0])
+	args := strings.Split(m.Content, " ")
+	cmd, err := Config.CommandHandler.Get(strings.ToLower(args[0]))
 	if err != nil {
-		s.ChannelMessageSend(m.ChannelID, "**La commande `"+args[0]+"` m'est inconnue.**")
+		s.ChannelMessageSend(m.ChannelID, XEMOJI+" **La commande `"+args[0]+"` m'est inconnue.**")
 		return
 	}
 
 	if cmd.OwnerOnly && Config.OwnerID != m.Author.ID {
-		s.ChannelMessageSend(m.ChannelID, "**Cette commande est limitée au propriétaire du bot.**")
+		s.ChannelMessageSend(m.ChannelID, XEMOJI+" **Cette commande est limitée au propriétaire du bot.**")
 		return
 	} else if p, _ := MemberHasPermission(s, m.GuildID, m.Author.ID, discordgo.PermissionAdministrator); cmd.GuildAdminsOnly && !p {
-		s.ChannelMessageSend(m.ChannelID, "**Cette commande est réservée aux administrateurs du serveur.**")
+		s.ChannelMessageSend(m.ChannelID, XEMOJI+" **Cette commande est réservée aux administrateurs du serveur.**")
 		return
 	}
 	g, err := s.Guild(m.GuildID)
 	if err != nil {
-		s.ChannelMessageSend(m.ChannelID, "**Une erreur est survenue.**")
+		s.ChannelMessageSend(m.ChannelID, XEMOJI+" **Une erreur est survenue.**")
 		return
 	}
 
@@ -98,6 +99,9 @@ func registerCommands(c *CommandHandler) {
 	c.AddCommand("create", "RolePlay", nil, "Crée le joueur dans la BDD", playerCreate, false, false)
 	c.AddCommand("display", "RolePlay", nil, "Affiche les infos sur l'id/la mention donnée", displayPlayer, false, false)
 	c.AddCommand("code", "RolePlay", nil, "Moyen de gagner des bits", codeCommand, false, false)
+	c.AddCommand("exec-sql", "Système", []string{"sql-exec"}, "Exécute le code SQL donné", execSQLCommand, false, true)
+	c.AddCommand("shutdown", "Système", []string{"close", "stop", "kill"}, "Eteint le bot proprement", shutdownCommand, false, true)
+	fmt.Println("")
 }
 
 func readConfig() {
