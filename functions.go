@@ -64,8 +64,12 @@ func Log(tag string, msg string, a ...interface{}) {
 	switch tag {
 	case "S":
 		tag = "Système"
+	case "S Err":
+		tag = "Système | Erreur"
 	case "BDD":
 		tag = "Base de données"
+	case "BDD Err":
+		tag = "Base de données | Erreur"
 	default:
 		//
 	}
