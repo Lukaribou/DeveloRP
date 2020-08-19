@@ -217,11 +217,6 @@ func watchReactionPoll(s *discordgo.Session, chID, msgID string, opt *WatchOptio
 			if u.ID == s.State.User.ID {
 				continue
 			}
-
-			err := s.MessageReactionRemove(chID, msgID, opt.Emoji, u.ID)
-			if err != nil {
-				return &discordgo.User{}, err
-			}
 			return u, nil
 		}
 	}
