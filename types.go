@@ -146,6 +146,7 @@ type (
 		Message  *discordgo.Message
 		Session  *discordgo.Session
 		TickRate time.Duration
+		Context  *Context
 		Data     interface{}
 	}
 	// WatchOption : Callback & expiration pour un émoji
@@ -155,15 +156,17 @@ type (
 		OnError       func(err error, wCtx *WatchContext)
 		LimitReaction int
 		Expiration    time.Duration
+		Filter        func(ctx *Context) bool
 	}
 )
 
 // NewWatcher : Crée un nouveau Watcher. tickRate != 0
-func NewWatcher(msg *discordgo.Message, ses *discordgo.Session, tickRate time.Duration, data interface{}) *WatchContext {
+func NewWatcher(msg *discordgo.Message, ses *discordgo.Session, tickRate time.Duration, ctx *Context, data interface{}) *WatchContext {
 	return &WatchContext{
 		Message:  msg,
 		Session:  ses,
 		TickRate: tickRate,
+		Context:  ctx,
 		Data:     data,
 	}
 }
@@ -196,7 +199,7 @@ func (ctx *WatchContext) watcher(opt WatchOption) {
 			if user, err := watchReactionPoll(ctx.Session, ctx.Message.ChannelID, ctx.Message.ID, &opt); err != nil {
 				opt.OnError(err, ctx)
 				return
-			} else if (discordgo.User{}) != *user {
+			} else if (discordgo.User{}) != *user && opt.Filter(ctx.Context) {
 				opt.OnSuccess(user, ctx)
 			}
 		}
