@@ -62,6 +62,8 @@ func TimestampNanoToDate(nano int64) string {
 // Log : Printf mais formaté pour la console
 func Log(tag string, msg string, a ...interface{}) {
 	switch tag {
+	case "Err":
+		tag = "Erreur"
 	case "S":
 		tag = "Système"
 	case "S Err":
