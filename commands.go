@@ -141,42 +141,21 @@ func codeCommand(ctx Context) {
 }
 
 func execSQLCommand(ctx Context) {
-	request := strings.Join(ctx.Args[1:], " ")
-	msg, err := ctx.Session.ChannelMessageSend(ctx.Channel.ID, "Etes-vous sûr de vouloir exécuter la requête suivante ? ```"+request+"```")
+	r, err := ctx.DB.sql.Exec(strings.Join(ctx.Args[1:], " "))
 	if err != nil {
-		Log("Err", err.Error())
+		ctx.ReplyError("Une erreur est survenue. J'envoie les détails en MP.")
+		if c, e := ctx.Session.UserChannelCreate(ctx.User.ID); e == nil {
+			ctx.Session.ChannelMessageSend(c.ID, "**Erreur dans `execSQLCommand()`:**\n```"+err.Error()+"```")
+		}
+		Log("BDD Err", err.Error())
 		return
 	}
-	watcher := NewWatcher(msg, ctx.Session, 500, &ctx, nil)
-	watcher.Add(WatchOption{
-		Emoji: OKEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
-			r, err := ctx.DB.sql.Exec(request)
-			if err != nil {
-				ctx.ReplyError("Une erreur est survenue. J'envoie les détails en MP.")
-				if c, e := ctx.Session.UserChannelCreate(ctx.User.ID); e == nil {
-					ctx.Session.ChannelMessageSend(c.ID, "**Erreur dans `execSQLCommand()`:**\n```"+err.Error()+"```")
-				}
-				Log("BDD Err", err.Error())
-				return
-			}
 
-			msgText := fmt.Sprintf("%s **BDD mise à jour avec succès.**\nCommande executée: `%s`", OKEMOJI, request)
-			if ra, e := r.RowsAffected(); e == nil {
-				msgText += fmt.Sprintf("\nColonnes affectées: `%d`", ra)
-			}
-			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, msgText)
-		}, OnError: func(err error, wCtx *WatchContext) {
-			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Une erreur est survenue.**")
-			Log("Err", "Erreur réaction collector : %s", err.Error())
-		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
-	}, WatchOption{
-		Emoji: XEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
-			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Requête SQL avortée.**")
-		}, OnError: func(err error, wCtx *WatchContext) {
-			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Une erreur est survenue.**")
-			Log("Err", "Erreur réaction collector : %s", err.Error())
-		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
-	})
+	msg := fmt.Sprintf("%s **BDD mise à jour avec succès.**\nCommande executée: `%s`", OKEMOJI, strings.Join(ctx.Args[1:], " "))
+	if ra, e := r.RowsAffected(); e == nil {
+		msg += fmt.Sprintf("\nColonnes affectées: `%d`", ra)
+	}
+	ctx.Session.ChannelMessageSend(ctx.Channel.ID, msg)
 }
 
 func shutdownCommand(ctx Context) {
