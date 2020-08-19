@@ -60,6 +60,7 @@ func (db *DB) GetPlayer(userID string) (*Player, error) {
 		&pl.lastCode,
 		&pl.skills)
 
+	pl.db = db
 	return &pl, nil
 }
 
@@ -68,17 +69,19 @@ func (db *DB) ExistLanguage(name string) bool {
 	return db.ExecExistWithQuery("SELECT ID FROM langs WHERE name = ?", name)
 }
 
-// GetCurrentLanguage : Prends le langage correspondant à l'ID donné
-func (db *DB) GetCurrentLanguage(curLangName string) (*Language, error) {
-	if !db.ExecExistWithQuery("SELECT ID FROM langs WHERE name = ?", curLangName) {
-		return nil, errors.New("Le '" + curLangName + "' ne correspond à aucun langage.")
+// GetLanguage : Prends le langage correspondant à l'ID donné
+func (db *DB) GetLanguage(langName string) (*Language, error) {
+	if !db.ExecExistWithQuery("SELECT ID FROM langs WHERE name = ?", langName) {
+		return nil, errors.New("Le '" + langName + "' ne correspond à aucun langage.")
 	}
 	var l Language
-	db.sql.QueryRow("SELECT * FROM langs WHERE name = ?", curLangName).Scan(
+	db.sql.QueryRow("SELECT * FROM langs WHERE name = ?", langName).Scan(
 		&l.ID,
 		&l.name,
 		&l.level,
 		&l.skills)
+
+	l.db = db
 
 	return &l, nil
 }

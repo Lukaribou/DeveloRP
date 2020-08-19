@@ -109,10 +109,11 @@ func GetLanguageSkills() map[string]int {
 		"Modules":     0x400,
 		"Web":         0x800,
 		"IO":          0x1000,
-		"Databases":   0x2000,
-		"System":      0x4000,
-		"Pointers":    0x8000,
-		"ASM":         0x10000,
+		"GUI":         0x2000,
+		"Databases":   0x4000,
+		"System":      0x8000,
+		"Pointers":    0x10000,
+		"ASM":         0x20000,
 	}
 }
 
@@ -126,12 +127,32 @@ type Player struct {
 	lastCode    int64
 	curLangName string
 	skills      int
+
+	db *DB
 }
 
 // HasSkill : Retourne true si le joueur a le skill
 // Même fonctionnement que permissions Discord
 func (pl *Player) HasSkill(code int) bool {
 	return pl.skills&code != 0
+}
+
+// GetTotalSkillsPoint : Renvoie le nombre de points communs au langage et au joueur
+func (pl *Player) GetTotalSkillsPoint() int {
+	lang := pl.GetCurrentLanguage()
+	total := 0
+	for _, skill := range GetLanguageSkills() {
+		if lang.HasSkill(skill) && pl.HasSkill(skill) {
+			total++
+		}
+	}
+	return total
+}
+
+// GetCurrentLanguage : Renvoie le langage actuel du joueur
+func (pl *Player) GetCurrentLanguage() *Language {
+	l, _ := pl.db.GetLanguage(pl.curLangName)
+	return l
 }
 
 // ***************
@@ -142,6 +163,8 @@ type Language struct {
 	name   string
 	level  int
 	skills int
+
+	db *DB
 }
 
 // HasSkill : Retourne true si le langage a le skill

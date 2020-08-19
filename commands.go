@@ -129,7 +129,7 @@ func codeCommand(ctx *Context) {
 		return
 	}
 
-	gain := 1 * pl.level
+	gain := pl.GetTotalSkillsPoint() * pl.level
 
 	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastPay = ?, money = ? WHERE ID = ?",
 		now.Unix(), pl.money+gain, pl.ID); err != nil {
