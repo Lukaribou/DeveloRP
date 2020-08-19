@@ -10,11 +10,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func pingCommand(ctx Context) {
+func pingCommand(ctx *Context) {
 	ctx.Reply("T'as cru que t'allais avoir la latence ?\nhttps://tenor.com/view/ha-cheh-take-that-gif-14055512")
 }
 
-func helpCommand(ctx Context) {
+func helpCommand(ctx *Context) {
 	categories := make(map[string][]*Command, 0)
 	for _, c := range Config.CommandHandler.Commands {
 		categories[c.Category] = append(categories[c.Category], c)
@@ -57,7 +57,7 @@ func helpCommand(ctx Context) {
 	})
 }
 
-func playerCreate(ctx Context) {
+func playerCreate(ctx *Context) {
 	if ctx.DB.PlayerExist(ctx.User.ID) {
 		ctx.ReplyError("Vous possédez déjà un joueur.")
 		return
@@ -75,7 +75,7 @@ func playerCreate(ctx Context) {
 	ctx.Reply(OKEMOJI + " **Vous êtes maintenant enregistré(e) dans ma base de données.**")
 }
 
-func displayPlayer(ctx Context) {
+func displayPlayer(ctx *Context) {
 	var target *discordgo.User
 	if len(ctx.Args) == 2 {
 		if len(ctx.Message.Mentions) != 0 {
@@ -115,7 +115,7 @@ func displayPlayer(ctx Context) {
 	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 }
 
-func codeCommand(ctx Context) {
+func codeCommand(ctx *Context) {
 	now := time.Now()
 	pl, err := ctx.DB.GetPlayer(ctx.User.ID)
 	if err != nil {
@@ -140,14 +140,14 @@ func codeCommand(ctx Context) {
 	ctx.Reply(OKEMOJI + " **Votre session de code vous a fait gagner `" + strconv.Itoa(gain) + "` bits.**")
 }
 
-func execSQLCommand(ctx Context) {
+func execSQLCommand(ctx *Context) {
 	request := strings.Join(ctx.Args[1:], " ")
 	msg, err := ctx.Session.ChannelMessageSend(ctx.Channel.ID, "Etes-vous sûr de vouloir exécuter la requête suivante ? ```"+request+"```")
 	if err != nil {
 		Log("Err", err.Error())
 		return
 	}
-	watcher := NewWatcher(msg, ctx.Session, 500, &ctx, nil)
+	watcher := NewWatcher(msg, ctx.Session, 500, ctx, nil)
 	watcher.Add(WatchOption{
 		Emoji: OKEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
 			r, err := ctx.DB.sql.Exec(request)
@@ -166,20 +166,24 @@ func execSQLCommand(ctx Context) {
 			}
 			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, msgText)
 		}, OnError: func(err error, wCtx *WatchContext) {
-			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Une erreur est survenue.**")
+			editMessageError(ctx, msg, "**Une erreur est survenue.**")
 			Log("Err", "Erreur réaction collector : %s", err.Error())
 		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
 	}, WatchOption{
 		Emoji: XEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
 			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Requête SQL avortée.**")
 		}, OnError: func(err error, wCtx *WatchContext) {
-			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Une erreur est survenue.**")
+			editMessageError(ctx, msg, "**Une erreur est survenue.**")
 			Log("Err", "Erreur réaction collector : %s", err.Error())
 		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
 	})
 }
 
-func shutdownCommand(ctx Context) {
+func editMessageError(ctx *Context, msg *discordgo.Message, err string) {
+	ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" "+err)
+}
+
+func shutdownCommand(ctx *Context) {
 	ctx.Session.ChannelMessageSend(ctx.Channel.ID, OKEMOJI+" **Extinction du bot en cours...**")
 	Log("S", "Arrêt système demandé.")
 
