@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"strings"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -133,6 +134,95 @@ type Language struct {
 	name   string
 	level  int
 	skills int
+}
+
+// ***************
+
+// https://github.com/CS-5/disgoreact/blob/master/disgoreact.go
+
+type (
+	// WatchContext : Les objets nécessaires pour watch un message
+	WatchContext struct {
+		Message  *discordgo.Message
+		Session  *discordgo.Session
+		TickRate time.Duration
+		Data     interface{}
+	}
+	// WatchOption : Callback & expiration pour un émoji
+	WatchOption struct {
+		Emoji         string
+		OnSuccess     func(user *discordgo.User, wCtx *WatchContext)
+		OnError       func(err error, wCtx *WatchContext)
+		LimitReaction int
+		Expiration    time.Duration
+	}
+)
+
+// NewWatcher : Crée un nouveau Watcher. tickRate != 0
+func NewWatcher(msg *discordgo.Message, ses *discordgo.Session, tickRate time.Duration, data interface{}) *WatchContext {
+	return &WatchContext{
+		Message:  msg,
+		Session:  ses,
+		TickRate: tickRate,
+		Data:     data,
+	}
+}
+
+// Add : Ajoute un watcher au WatchContext.
+// Les réactions sont dans un tableau d'Options
+func (ctx *WatchContext) Add(options ...WatchOption) {
+	for _, v := range options {
+		if err := ctx.Session.MessageReactionAdd(ctx.Message.ChannelID, ctx.Message.ID, v.Emoji); err != nil {
+			Log("Err", "Impossible d'ajouter une réaction au message n°%s.", ctx.Message.ID)
+		}
+		go ctx.watcher(v)
+	}
+}
+
+func (ctx *WatchContext) watcher(opt WatchOption) {
+	exp := time.After(opt.Expiration)
+	tick := time.Tick(ctx.TickRate)
+	expired := false
+
+	for {
+		select {
+		case <-exp:
+			expired = true
+		case <-tick:
+			if expired {
+				ctx.Session.MessageReactionsRemoveAll(ctx.Message.ChannelID, ctx.Message.ID)
+				return
+			}
+			if user, err := watchReactionPoll(ctx.Session, ctx.Message.ChannelID, ctx.Message.ID, &opt); err != nil {
+				opt.OnError(err, ctx)
+				return
+			} else if (discordgo.User{}) != *user {
+				opt.OnSuccess(user, ctx)
+			}
+		}
+	}
+}
+
+func watchReactionPoll(s *discordgo.Session, chID, msgID string, opt *WatchOption) (*discordgo.User, error) {
+	users, err := s.MessageReactions(chID, msgID, opt.Emoji, opt.LimitReaction, "", "")
+	if err != nil {
+		return &discordgo.User{}, err
+	}
+
+	if len(users) >= 1 {
+		for _, u := range users {
+			if u.ID == s.State.User.ID {
+				continue
+			}
+
+			err := s.MessageReactionRemove(chID, msgID, opt.Emoji, u.ID)
+			if err != nil {
+				return &discordgo.User{}, err
+			}
+			return u, nil
+		}
+	}
+	return &discordgo.User{}, nil
 }
 
 // ***************
