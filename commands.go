@@ -148,7 +148,7 @@ func execSQLCommand(ctx *Context) {
 		return
 	}
 	watcher := NewWatcher(msg, ctx.Session, 500, ctx, nil)
-	watcher.Add(WatchOption{
+	watcher.Add(&WatchOption{
 		Emoji: OKEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
 			r, err := ctx.DB.sql.Exec(request)
 			if err != nil {
@@ -169,7 +169,7 @@ func execSQLCommand(ctx *Context) {
 			editMessageError(ctx, msg, "**Une erreur est survenue.**")
 			Log("Err", "Erreur réaction collector : %s", err.Error())
 		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
-	}, WatchOption{
+	}, &WatchOption{
 		Emoji: XEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
 			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Requête SQL avortée.**")
 		}, OnError: func(err error, wCtx *WatchContext) {
