@@ -93,20 +93,28 @@ func (ch *CommandHandler) AddCommand(name string,
 
 // ***************
 
-// Les constantes des skills
-const (
-	HelloWorldSkill = 0x1
-	VariablesSkill  = 0x2
-	FunctionsSkill  = 0x4
-	ArraysSkill     = 0x8
-	TypesSkill      = 0
-	WebSkill        = 0
-	IOSkill         = 0
-	DatabasesSkill  = 0
-	SystemSkill     = 0
-	PointersSkill   = 0
-	ASMSkill        = 0
-)
+// GetLanguageSkills : Retourne les skills disponibles
+func GetLanguageSkills() map[string]int {
+	return map[string]int{
+		"HelloWorld":  0x1,
+		"Variables":   0x2,
+		"Conditions":  0x4,
+		"Operators":   0x8,
+		"ControlFlow": 0x10,
+		"Functions":   0x20,
+		"Arrays":      0x40,
+		"Loops":       0x80,
+		"Exceptions":  0x100,
+		"Types":       0x200,
+		"Modules":     0x400,
+		"Web":         0x800,
+		"IO":          0x1000,
+		"Databases":   0x2000,
+		"System":      0x4000,
+		"Pointers":    0x8000,
+		"ASM":         0x10000,
+	}
+}
 
 // Player : Représente un joueur dans la BDD
 type Player struct {
@@ -134,6 +142,12 @@ type Language struct {
 	name   string
 	level  int
 	skills int
+}
+
+// HasSkill : Retourne true si le langage a le skill
+// Même fonctionnement que permissions Discord
+func (l *Language) HasSkill(code int) bool {
+	return l.skills&code != 0
 }
 
 // ***************
