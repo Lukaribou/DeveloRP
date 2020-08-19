@@ -173,7 +173,7 @@ func NewWatcher(msg *discordgo.Message, ses *discordgo.Session, tickRate time.Du
 
 // Add : Ajoute un watcher au WatchContext.
 // Les réactions sont dans un tableau d'Options
-func (ctx *WatchContext) Add(options ...WatchOption) {
+func (ctx *WatchContext) Add(options ...*WatchOption) {
 	for _, v := range options {
 		if err := ctx.Session.MessageReactionAdd(ctx.Message.ChannelID, ctx.Message.ID, v.Emoji); err != nil {
 			Log("Err", "Impossible d'ajouter une réaction au message n°%s.", ctx.Message.ID)
@@ -182,7 +182,7 @@ func (ctx *WatchContext) Add(options ...WatchOption) {
 	}
 }
 
-func (ctx *WatchContext) watcher(opt WatchOption) {
+func (ctx *WatchContext) watcher(opt *WatchOption) {
 	exp := time.After(opt.Expiration)
 	tick := time.Tick(ctx.TickRate)
 	expired := false
@@ -196,7 +196,7 @@ func (ctx *WatchContext) watcher(opt WatchOption) {
 				ctx.Session.MessageReactionsRemoveAll(ctx.Message.ChannelID, ctx.Message.ID)
 				return
 			}
-			if user, err := watchReactionPoll(ctx.Session, ctx.Message.ChannelID, ctx.Message.ID, &opt); err != nil {
+			if user, err := watchReactionPoll(ctx.Session, ctx.Message.ChannelID, ctx.Message.ID, opt); err != nil {
 				opt.OnError(err, ctx)
 				return
 			} else if (discordgo.User{}) != *user && opt.Filter(ctx.Context) {
