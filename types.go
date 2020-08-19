@@ -93,30 +93,6 @@ func (ch *CommandHandler) AddCommand(name string,
 
 // ***************
 
-// GetLanguageSkills : Retourne les skills disponibles
-func GetLanguageSkills() map[string]int {
-	return map[string]int{
-		"HelloWorld":  0x1,
-		"Variables":   0x2,
-		"Conditions":  0x4,
-		"Operators":   0x8,
-		"ControlFlow": 0x10,
-		"Functions":   0x20,
-		"Arrays":      0x40,
-		"Loops":       0x80,
-		"Exceptions":  0x100,
-		"Types":       0x200,
-		"Modules":     0x400,
-		"Web":         0x800,
-		"IO":          0x1000,
-		"GUI":         0x2000,
-		"Databases":   0x4000,
-		"System":      0x8000,
-		"Pointers":    0x10000,
-		"ASM":         0x20000,
-	}
-}
-
 // Player : Représente un joueur dans la BDD
 type Player struct {
 	ID          int
@@ -163,6 +139,7 @@ type Language struct {
 	name   string
 	level  int
 	skills int
+	cost   int
 
 	db *DB
 }
