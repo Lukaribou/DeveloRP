@@ -55,7 +55,7 @@ type Command struct {
 	Description     string
 	GuildAdminsOnly bool
 	OwnerOnly       bool
-	Execute         func(Context)
+	Execute         func(*Context)
 }
 
 // ***************
@@ -81,7 +81,7 @@ func (ch *CommandHandler) AddCommand(name string,
 	category string,
 	aliases []string,
 	description string,
-	execute func(Context),
+	execute func(*Context),
 	guildAdminsOnly bool,
 	ownerOnly bool) {
 	if aliases == nil {

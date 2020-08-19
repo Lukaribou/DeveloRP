@@ -89,7 +89,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if c, err := s.Channel(m.ChannelID); err == nil {
-		go cmd.Execute(Context{g, c, m.Author, m.Member, m, s, database, args})
+		go cmd.Execute(&Context{g, c, m.Author, m.Member, m, s, database, args})
 	}
 }
 
