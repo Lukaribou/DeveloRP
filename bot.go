@@ -50,7 +50,7 @@ func main() {
 }
 
 func ready(s *discordgo.Session, e *discordgo.Ready) {
-	s.UpdateListeningStatus(Config.Prefix)
+	s.UpdateListeningStatus(Config.Prefix + " | " + Config.Version)
 	Log("S", "Bot en ligne sur %d serveur(s) sous le nom de %s.\n", len(e.Guilds), e.User.Username)
 }
 
@@ -101,7 +101,7 @@ func registerCommands(c *CommandHandler) {
 	c.AddCommand("code", "RolePlay", nil, "Moyen de gagner des bits", codeCommand, false, false)
 	c.AddCommand("exec-sql", "Système", []string{"sql-exec"}, "Exécute le code SQL donné", execSQLCommand, false, true)
 	c.AddCommand("shutdown", "Système", []string{"close", "stop", "kill"}, "Eteint le bot proprement", shutdownCommand, false, true)
-	fmt.Println("")
+	fmt.Println()
 }
 
 func readConfig() {
@@ -115,7 +115,7 @@ func readConfig() {
 	byteVal, _ := ioutil.ReadAll(jsonF)
 	json.Unmarshal(byteVal, &Config)
 
-	Config.Version = "early state 0.0.1"
+	Config.Version = "v0.0.1"
 
 	registerCommands(&Config.CommandHandler)
 }
