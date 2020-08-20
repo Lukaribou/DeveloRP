@@ -95,3 +95,24 @@ func (db *DB) GetLanguage(langName string) (*Language, error) {
 
 	return &l, nil
 }
+
+// GetSkills : Renvoie la liste de tous les skills de la BDD
+func (db *DB) GetSkills() []*Skill {
+	var skills []*Skill
+	rows, err := db.sql.Query("SELECT * FROM skills")
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var s Skill
+		err := rows.Scan(&s.ID, &s.cost, &s.gain, &s.name)
+		if err != nil {
+			panic(err)
+		}
+		s.db = db
+		skills = append(skills, &s)
+	}
+	return skills
+}
