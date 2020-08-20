@@ -64,7 +64,8 @@ func playerCreate(ctx *Context) {
 	}
 
 	id, _ := strconv.Atoi(ctx.User.ID)
-	_, err := ctx.DB.sql.Exec("INSERT INTO users (userID, money, level, createDate, lastPay) VALUES (?, '0', 1, ?, nil)",
+	_, err := ctx.DB.sql.Exec(
+		"INSERT INTO users (userID, money, level, createDate, lastCode, curLangName, skills) VALUES (?, '0', 1, ?, 0, 'Python', 1)",
 		id, strconv.Itoa(int(time.Now().Unix())))
 	if err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
@@ -116,23 +117,24 @@ func displayPlayer(ctx *Context) {
 }
 
 func codeCommand(ctx *Context) {
-	now := time.Now()
 	pl, err := ctx.DB.GetPlayer(ctx.User.ID)
 	if err != nil {
 		ctx.ReplyError("Vous ne possédez pas de joueur.")
 		return
 	}
-	last := time.Unix(pl.lastCode, 0)
 
-	if last.Add(6 * time.Hour).After(now) { // => Si ça fait moins de 6h
-		ctx.ReplyError("Vous devez attendre *" + TimeFormatFr(last.Add(6*time.Hour)) + "* avant la prochaine session de code.")
-		return
+	if pl.lastCode != 0 {
+		last := time.Unix(pl.lastCode, 0)
+		if last.Add(time.Hour).After(time.Now()) { // => Si ça fait moins de 6h
+			ctx.ReplyError("Vous devez attendre *" + TimeFormatFr(last.Add(time.Hour)) + "* avant la prochaine session de code.")
+			return
+		}
 	}
 
 	gain := pl.GetTotalSkillsPoint() * pl.level
 
-	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastPay = ?, money = ? WHERE ID = ?",
-		now.Unix(), pl.money+gain, pl.ID); err != nil {
+	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastCode = ?, money = ? WHERE ID = ?",
+		time.Now().Unix(), pl.money+gain, pl.ID); err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
 		return
 	}

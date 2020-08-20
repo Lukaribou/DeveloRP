@@ -67,6 +67,7 @@ func (db *DB) GetPlayer(userID string) (*Player, error) {
 		&pl.level,
 		&pl.createDate,
 		&pl.lastCode,
+		&pl.curLangName,
 		&pl.skills)
 
 	pl.db = db

@@ -16,6 +16,7 @@ type ConfigStruct struct {
 	InviteLink     string
 	Prefix         string
 	DbPassword     string
+	SQLPort        []string
 	CommandHandler CommandHandler
 }
 
@@ -117,9 +118,9 @@ func (pl *Player) HasSkill(code int) bool {
 func (pl *Player) GetTotalSkillsPoint() int {
 	lang := pl.GetCurrentLanguage()
 	total := 0
-	for _, skill := range GetLanguageSkills() {
-		if lang.HasSkill(skill) && pl.HasSkill(skill) {
-			total++
+	for _, skill := range pl.db.GetSkills() {
+		if lang.HasSkill(skill.gain) && pl.HasSkill(skill.gain) {
+			total += skill.gain
 		}
 	}
 	return total
@@ -148,6 +149,19 @@ type Language struct {
 // Même fonctionnement que permissions Discord
 func (l *Language) HasSkill(code int) bool {
 	return l.skills&code != 0
+}
+
+// ***************
+
+// Skill : Représente un skill dans la BDD
+type Skill struct {
+	ID   int
+	cost int
+	// Représente aussi le code du skill
+	gain int
+	name string
+
+	db *DB
 }
 
 // ***************
