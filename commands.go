@@ -187,6 +187,7 @@ func editMessageError(ctx *Context, msg *discordgo.Message, err string) {
 
 func shutdownCommand(ctx *Context) {
 	ctx.Session.ChannelMessageSend(ctx.Channel.ID, OKEMOJI+" **Extinction du bot en cours...**")
+	fmt.Println()
 	Log("S", "Arrêt système demandé.")
 
 	errSC := ctx.Session.Close()
