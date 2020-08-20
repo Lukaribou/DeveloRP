@@ -1,5 +1,4 @@
 @ECHO OFF
-CLS 
 
 IF "%1%"=="linux" (
     SET GOOS=linux
