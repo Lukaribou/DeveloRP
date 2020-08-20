@@ -115,5 +115,7 @@ func readConfig() {
 	byteVal, _ := ioutil.ReadAll(jsonF)
 	json.Unmarshal(byteVal, &Config)
 
+	Config.Version = "early state 0.0.1"
+
 	registerCommands(&Config.CommandHandler)
 }

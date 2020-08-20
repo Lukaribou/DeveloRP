@@ -17,6 +17,7 @@ type ConfigStruct struct {
 	Prefix         string
 	DbPassword     string
 	SQLPort        []string
+	Version        string
 	CommandHandler CommandHandler
 }
 
