@@ -5,9 +5,11 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/bwmarrin/discordgo"
+	"github.com/fatih/color"
 )
 
 // ArrIncludes : Indique si un tableau contient une certaine chaine
@@ -60,10 +62,45 @@ func TimestampNanoToDate(nano int64) string {
 	return TimeFormatFr(time.Unix(0, nano))
 }
 
+func formatLogTag(tag string) string {
+	switch tag {
+	case "Err":
+		tag = "Erreur"
+	case "Sys":
+		tag = "Système"
+	case "Sys S":
+		tag = "Système | Succès"
+	case "Sys Err":
+		tag = "Système | Erreur"
+	case "BDD":
+		tag = "Base de données"
+	case "BDD S":
+		tag = "Base de données | Succès"
+	case "BDD Err":
+		tag = "Base de données | Erreur"
+	case "Warn":
+		tag = "Avertissement"
+	case "S":
+		tag = "Succès"
+	default:
+		//
+	}
+	return tag
+}
+
 // Log : Printf mais formaté pour la console
 func Log(tag, msg string, a ...interface{}) {
 	tag = formatLogTag(tag)
-	fmt.Printf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
+	text := fmt.Sprintf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
+	if strings.Contains(tag, "Erreur") {
+		color.HiRed(text)
+	} else if strings.Contains(tag, "Avertissement") {
+		color.HiYellow(text)
+	} else if strings.Contains(tag, "Succès") {
+		color.HiGreen(text)
+	} else {
+		fmt.Print(text)
+	}
 }
 
 // LogFile : Log() mais vers un fichier
@@ -78,42 +115,24 @@ func LogFile(tag, fileName, msg string, a ...interface{}) {
 		if os.IsNotExist(err) {
 			cf, e := os.Create(fileName)
 			if e != nil {
-				Log("S Err", "Erreur LogFile : %s", err.Error())
+				Log("Sys Err", "Erreur LogFile : %s", err.Error())
 				return
 			}
 			f = cf
 			if _, er := f.WriteString("[ Logs DeveloRP " + Config.Version + " ]\n\n"); er != nil {
-				Log("S Err", "Erreur LogFile : %s", err.Error())
+				Log("Sys Err", "Erreur LogFile : %s", err.Error())
 				return
 			}
 		} else {
-			Log("S Err", "Erreur LogFile : %s", err.Error())
+			Log("Sys Err", "Erreur LogFile : %s", err.Error())
 			return
 		}
 	}
 
 	defer f.Close()
 	if _, e := f.WriteString(fmt.Sprintf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))); e != nil {
-		Log("S Err", "Erreur LogFile : %s", err.Error())
+		Log("Sys Err", "Erreur LogFile : %s", err.Error())
 	}
-}
-
-func formatLogTag(tag string) string {
-	switch tag {
-	case "Err":
-		tag = "Erreur"
-	case "S":
-		tag = "Système"
-	case "S Err":
-		tag = "Système | Erreur"
-	case "BDD":
-		tag = "Base de données"
-	case "BDD Err":
-		tag = "Base de données | Erreur"
-	default:
-		//
-	}
-	return tag
 }
 
 // InPercentLuck : ...

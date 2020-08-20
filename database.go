@@ -38,7 +38,7 @@ func DbConnect() *sql.DB {
 	if e != nil {
 		panic(e)
 	}
-	Log("BDD", "Connexion réussie / Version: %s.", v)
+	Log("BDD S", "Connexion réussie / Version: %s.", v)
 	return d
 }
 

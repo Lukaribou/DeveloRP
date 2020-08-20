@@ -42,7 +42,7 @@ func main() {
 	defer dg.Close()
 
 	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
-	Log("S", "Générateur du paquet \"rand\" initialisé.")
+	Log("Sys", "Générateur du paquet \"rand\" initialisé.")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
@@ -51,7 +51,7 @@ func main() {
 
 func ready(s *discordgo.Session, e *discordgo.Ready) {
 	s.UpdateListeningStatus(Config.Prefix + " | " + Config.Version)
-	Log("S", "Bot en ligne sur %d serveur(s) sous le nom de %s.\n", len(e.Guilds), e.User.Username)
+	Log("Sys S", "Bot en ligne sur %d serveur(s) sous le nom de %s.\n", len(e.Guilds), e.User.Username)
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {

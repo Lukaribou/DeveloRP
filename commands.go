@@ -188,11 +188,11 @@ func editMessageError(ctx *Context, msg *discordgo.Message, err string) {
 func shutdownCommand(ctx *Context) {
 	ctx.Session.ChannelMessageSend(ctx.Channel.ID, OKEMOJI+" **Extinction du bot en cours...**")
 	fmt.Println()
-	Log("S", "Arrêt système demandé.")
+	Log("Sys", "Arrêt système demandé.")
 
 	errSC := ctx.Session.Close()
 	if errSC != nil {
-		Log("S Err", "Erreur pendant la fermeture de la session: %s.", errSC.Error())
+		Log("Sys Err", "Erreur pendant la fermeture de la session: %s.", errSC.Error())
 	}
 	errSQLC := ctx.DB.sql.Close()
 	if errSQLC != nil {
@@ -200,7 +200,7 @@ func shutdownCommand(ctx *Context) {
 	}
 
 	if errSC == nil && errSQLC == nil {
-		Log("S", "Bot arrêté sans problème.")
+		Log("Sys S", "Bot arrêté sans problème.")
 	}
 	os.Exit(0)
 }
