@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"strconv"
 	"time"
 
@@ -60,7 +61,44 @@ func TimestampNanoToDate(nano int64) string {
 }
 
 // Log : Printf mais formaté pour la console
-func Log(tag string, msg string, a ...interface{}) {
+func Log(tag, msg string, a ...interface{}) {
+	tag = formatLogTag(tag)
+	fmt.Printf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
+}
+
+// LogFile : Log() mais vers un fichier
+func LogFile(tag, fileName, msg string, a ...interface{}) {
+	tag = formatLogTag(tag)
+	if fileName == "" {
+		fileName = "data/log.txt"
+	}
+
+	f, err := os.OpenFile(fileName, os.O_APPEND, 0666)
+	if err != nil {
+		if os.IsNotExist(err) {
+			cf, e := os.Create(fileName)
+			if e != nil {
+				Log("S Err", "Erreur LogFile : %s", err.Error())
+				return
+			}
+			f = cf
+			if _, er := f.WriteString("[ Logs DeveloRP " + Config.Version + " ]\n\n"); er != nil {
+				Log("S Err", "Erreur LogFile : %s", err.Error())
+				return
+			}
+		} else {
+			Log("S Err", "Erreur LogFile : %s", err.Error())
+			return
+		}
+	}
+
+	defer f.Close()
+	if _, e := f.WriteString(fmt.Sprintf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))); e != nil {
+		Log("S Err", "Erreur LogFile : %s", err.Error())
+	}
+}
+
+func formatLogTag(tag string) string {
 	switch tag {
 	case "Err":
 		tag = "Erreur"
@@ -75,7 +113,7 @@ func Log(tag string, msg string, a ...interface{}) {
 	default:
 		//
 	}
-	fmt.Printf("[%s] | [%s] %s\n", TimeFormatFr(time.Now()), tag, fmt.Sprintf(msg, a...))
+	return tag
 }
 
 // InPercentLuck : ...
