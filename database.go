@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"errors"
+	"runtime"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -21,7 +22,14 @@ func NewDB() *DB {
 
 // DbConnect : Se connecte à la base de données
 func DbConnect() *sql.DB {
-	d, err := sql.Open("mysql", "root:"+Config.DbPassword+"@/develorp")
+	var sqlConn string
+	if runtime.GOOS == "windows" {
+		sqlConn = "root:" + Config.DbPassword + "@tcp(:" + Config.SQLPort[0] + ")/develorp"
+	} else {
+		sqlConn = "pi:" + Config.DbPassword + "@tcp(:" + Config.SQLPort[1] + ")/develorp"
+	}
+
+	d, err := sql.Open("mysql", sqlConn)
 	if err != nil {
 		panic(err)
 	}
