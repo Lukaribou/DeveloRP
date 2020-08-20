@@ -14,12 +14,13 @@ type DB struct {
 
 // NewDB : Initialise la BDD
 func NewDB() *DB {
-	d := &DB{}
-	return &DB{sql: d.DbConnect()}
+	return &DB{
+		sql: DbConnect(),
+	}
 }
 
 // DbConnect : Se connecte à la base de données
-func (db *DB) DbConnect() *sql.DB {
+func DbConnect() *sql.DB {
 	d, err := sql.Open("mysql", "root:"+Config.DbPassword+"@/develorp")
 	if err != nil {
 		panic(err)
