@@ -154,6 +154,8 @@ const (
 	TADAEMOJI      = "🎉"
 	ADMINSEMOJI    = "🚔"
 	OWNERONLYEMOJI = "🔐"
+	LOCKEDEMOJI    = "🔒"
+	UNLOCKEDEMOJI  = "🔓"
 )
 
 // GetEmojiOkOrX : Renvoie l'émoji Check si la condition == true, sinon X
