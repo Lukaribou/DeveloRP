@@ -116,7 +116,7 @@ func DisplayPlayer(ctx *Context) {
 		Author: &discordgo.MessageEmbedAuthor{Name: "Informations sur " + target.Username, IconURL: target.AvatarURL("")},
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Bits:", Value: strconv.FormatUint(uint64(pl.money), 10), Inline: true},
-			{Name: "Niveau:", Value: strconv.Itoa(pl.level), Inline: true},
+			{Name: "XP:", Value: strconv.FormatUint(uint64(pl.xp), 10) + "(Niveau:" + strconv.Itoa(pl.level) + ")", Inline: true},
 			{Name: "Date de création:", Value: TimestampSecToDate(pl.createDate), Inline: true},
 			{Name: "Langage actuel:", Value: lang.name + " (" + strconv.Itoa(lang.level) + ")", Inline: true},
 			{Name: "Compétences:", Value: listSkillsStr + fmt.Sprintf(" (%d/%d)", len(listSkills), lang.SkillsCount()), Inline: true}},
