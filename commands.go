@@ -68,7 +68,7 @@ func PlayerCreate(ctx *Context) {
 
 	id, _ := strconv.Atoi(ctx.User.ID)
 	_, err := ctx.DB.sql.Exec(
-		"INSERT INTO users (userID, money, level, createDate, lastCode, curLangName, skills) VALUES (?, '0', 1, ?, 0, 'Python', 1)",
+		"INSERT INTO users (userID, money, xp, level, createDate, lastCode, curLangName, skills) VALUES (?, 0, 1, 1, ?, 0, 'Python', 1)",
 		id, strconv.Itoa(int(time.Now().Unix())))
 	if err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
@@ -115,7 +115,7 @@ func DisplayPlayer(ctx *Context) {
 		Color:  lang.color,
 		Author: &discordgo.MessageEmbedAuthor{Name: "Informations sur " + target.Username, IconURL: target.AvatarURL("")},
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Bits:", Value: strconv.Itoa(pl.money), Inline: true},
+			{Name: "Bits:", Value: strconv.FormatUint(uint64(pl.money), 10), Inline: true},
 			{Name: "Niveau:", Value: strconv.Itoa(pl.level), Inline: true},
 			{Name: "Date de création:", Value: TimestampSecToDate(pl.createDate), Inline: true},
 			{Name: "Langage actuel:", Value: lang.name + " (" + strconv.Itoa(lang.level) + ")", Inline: true},
@@ -221,4 +221,18 @@ func ShutdownCommand(ctx *Context) {
 		Log("Sys S", "Bot arrêté sans problème.")
 	}
 	os.Exit(0)
+}
+
+// BuyCommand : Commande pour acheter un skill / afficher le shop
+func BuyCommand(ctx *Context) {
+	if len(ctx.Args) == 1 {
+		// Afficher shop
+		em := &discordgo.MessageEmbed{}
+
+		ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
+	} else if len(ctx.Args) == 2 {
+		// Acheter skill
+	} else {
+		ctx.Reply("Entrez la commande sans paramètre pour afficher le shop, ou la commande + l'id de la compétence pour acheter celle-ci.")
+	}
 }
