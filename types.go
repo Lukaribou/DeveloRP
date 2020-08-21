@@ -152,6 +152,7 @@ type Language struct {
 	skills int
 	cost   int
 	imgURL string
+	color  int
 
 	db *DB
 }

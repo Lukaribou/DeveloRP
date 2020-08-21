@@ -97,24 +97,35 @@ func DisplayPlayer(ctx *Context) {
 		target = ctx.User
 	}
 
-	player, err := ctx.DB.GetPlayer(target.ID)
+	pl, err := ctx.DB.GetPlayer(target.ID)
 	if err != nil {
 		ctx.ReplyError(err.Error())
 		return
 	}
 
+	listSkills := []string{}
+	for _, s := range pl.GetOwnedSkills() {
+		listSkills = append(listSkills, s.name)
+	}
+	listSkillsStr := "`" + strings.Join(listSkills, "`, `") + "`"
+
+	lang := pl.GetCurrentLanguage()
+
 	em := &discordgo.MessageEmbed{
-		Color:  0x00FF00,
+		Color:  lang.color,
 		Author: &discordgo.MessageEmbedAuthor{Name: "Informations sur " + target.Username, IconURL: target.AvatarURL("")},
 		Fields: []*discordgo.MessageEmbedField{
-			{Name: "Bits:", Value: strconv.Itoa(player.money), Inline: true},
-			{Name: "Niveau:", Value: strconv.Itoa(player.level), Inline: true},
-			{Name: "Date de création:", Value: TimestampSecToDate(player.createDate), Inline: true}},
-		Footer: &discordgo.MessageEmbedFooter{Text: "BDD ID: " + strconv.Itoa(player.ID), IconURL: ctx.Session.State.User.AvatarURL("")},
+			{Name: "Bits:", Value: strconv.Itoa(pl.money), Inline: true},
+			{Name: "Niveau:", Value: strconv.Itoa(pl.level), Inline: true},
+			{Name: "Date de création:", Value: TimestampSecToDate(pl.createDate), Inline: true},
+			{Name: "Langage actuel:", Value: lang.name + " (" + strconv.Itoa(lang.level) + ")", Inline: true},
+			{Name: "Compétences:", Value: listSkillsStr + fmt.Sprintf(" (%d/%d)", len(listSkills), lang.SkillsCount()), Inline: true}},
+		Footer:    &discordgo.MessageEmbedFooter{Text: "BDD ID: " + strconv.Itoa(pl.ID), IconURL: ctx.Session.State.User.AvatarURL("")},
+		Thumbnail: &discordgo.MessageEmbedThumbnail{URL: lang.imgURL},
 	}
 
-	if player.lastCode != 0 {
-		em.Fields = append(em.Fields, &discordgo.MessageEmbedField{Name: "Dernier code:", Value: TimestampSecToDate(player.lastCode), Inline: true})
+	if pl.lastCode != 0 {
+		em.Fields = append(em.Fields, &discordgo.MessageEmbedField{Name: "Dernier code:", Value: TimestampSecToDate(pl.lastCode), Inline: true})
 	}
 
 	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)

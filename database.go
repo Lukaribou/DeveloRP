@@ -90,7 +90,9 @@ func (db *DB) GetLanguage(langName string) (*Language, error) {
 		&l.name,
 		&l.level,
 		&l.skills,
-		&l.cost)
+		&l.cost,
+		&l.imgURL,
+		&l.color)
 
 	l.db = db
 
