@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -115,14 +116,22 @@ func (pl *Player) HasSkill(code int) bool {
 	return pl.skills&code != 0
 }
 
+// GetOwnedSkills : Renvoie la liste des skills que le joueur possède
+func (pl *Player) GetOwnedSkills() []*Skill {
+	skills := []*Skill{}
+	for _, skill := range pl.db.GetSkills() {
+		if pl.HasSkill(skill.gain) {
+			skills = append(skills, skill)
+		}
+	}
+	return skills
+}
+
 // GetTotalSkillsPoint : Renvoie le nombre de points communs au langage et au joueur
 func (pl *Player) GetTotalSkillsPoint() int {
-	lang := pl.GetCurrentLanguage()
 	total := 0
-	for _, skill := range pl.db.GetSkills() {
-		if lang.HasSkill(skill.gain) && pl.HasSkill(skill.gain) {
-			total += skill.gain
-		}
+	for _, skill := range pl.GetOwnedSkills() {
+		total += skill.gain
 	}
 	return total
 }
@@ -142,6 +151,7 @@ type Language struct {
 	level  int
 	skills int
 	cost   int
+	imgURL string
 
 	db *DB
 }
@@ -150,6 +160,19 @@ type Language struct {
 // Même fonctionnement que permissions Discord
 func (l *Language) HasSkill(code int) bool {
 	return l.skills&code != 0
+}
+
+// SkillsCount : Renvoie le nombre de skills achetable dans le langage
+func (l *Language) SkillsCount() int {
+	count := 0
+	s := strconv.FormatInt(int64(l.skills), 2)
+	for i := 0; i < len(s); i++ {
+		v, _ := strconv.Atoi(string(s[i]))
+		if v%2 == 1 {
+			count++
+		}
+	}
+	return count
 }
 
 // ***************
