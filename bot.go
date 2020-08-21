@@ -35,14 +35,14 @@ func main() {
 	database = NewDB()
 	defer database.sql.Close()
 
+	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
+	Log("Sys S", "Générateur du paquet \"rand\" initialisé.")
+
 	err = dg.Open()
 	if err != nil {
 		log.Fatal("Erreur lors de l'ouverture de la connection")
 	}
 	defer dg.Close()
-
-	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
-	Log("Sys S", "Générateur du paquet \"rand\" initialisé.")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
