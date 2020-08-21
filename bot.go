@@ -42,7 +42,7 @@ func main() {
 	defer dg.Close()
 
 	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
-	Log("Sys", "Générateur du paquet \"rand\" initialisé.")
+	Log("Sys S", "Générateur du paquet \"rand\" initialisé.")
 
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
