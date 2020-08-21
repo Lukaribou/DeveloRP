@@ -227,7 +227,9 @@ func ShutdownCommand(ctx *Context) {
 func BuyCommand(ctx *Context) {
 	if len(ctx.Args) == 1 {
 		// Afficher shop
-		em := &discordgo.MessageEmbed{}
+		em := &discordgo.MessageEmbed{
+			Author: &discordgo.MessageEmbedAuthor{Name: "DeveloRP | Shop", IconURL: ctx.Session.State.User.AvatarURL(""), URL: Config.GitHubLink},
+		}
 
 		ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 	} else if len(ctx.Args) == 2 {
