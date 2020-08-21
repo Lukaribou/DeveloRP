@@ -150,7 +150,7 @@ func CodeCommand(ctx *Context) {
 	gain := pl.GetTotalSkillsPoint() * pl.level
 
 	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastCode = ?, money = ? WHERE ID = ?",
-		time.Now().Unix(), pl.money+gain, pl.ID); err != nil {
+		time.Now().Unix(), pl.money+uint(gain), pl.ID); err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
 		return
 	}
