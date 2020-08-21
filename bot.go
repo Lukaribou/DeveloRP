@@ -94,13 +94,13 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func registerCommands(c *CommandHandler) {
-	c.AddCommand("ping", "Système", nil, "Réponds par pong si le bot est en ligne", pingCommand, false, false)
-	c.AddCommand("help", "Informations", nil, "Affiche la liste des commandes", helpCommand, false, false)
-	c.AddCommand("create", "RolePlay", nil, "Crée le joueur dans la BDD", playerCreate, false, false)
-	c.AddCommand("display", "RolePlay", nil, "Affiche les infos sur l'id/la mention donnée", displayPlayer, false, false)
-	c.AddCommand("code", "RolePlay", nil, "Moyen de gagner des bits", codeCommand, false, false)
-	c.AddCommand("exec-sql", "Système", []string{"sql-exec"}, "Exécute le code SQL donné", execSQLCommand, false, true)
-	c.AddCommand("shutdown", "Système", []string{"close", "stop", "kill"}, "Eteint le bot proprement", shutdownCommand, false, true)
+	c.AddCommand("ping", "Système", nil, "Réponds par pong si le bot est en ligne", PingCommand, false, false)
+	c.AddCommand("help", "Informations", nil, "Affiche la liste des commandes", HelpCommand, false, false)
+	c.AddCommand("create", "RolePlay", nil, "Crée le joueur dans la BDD", PlayerCreate, false, false)
+	c.AddCommand("display", "RolePlay", nil, "Affiche les infos sur l'id/la mention donnée", DisplayPlayer, false, false)
+	c.AddCommand("code", "RolePlay", nil, "Moyen de gagner des bits", CodeCommand, false, false)
+	c.AddCommand("exec-sql", "Système", []string{"sql-exec"}, "Exécute le code SQL donné", ExecSQLCommand, false, true)
+	c.AddCommand("shutdown", "Système", []string{"close", "stop", "kill"}, "Eteint le bot proprement", ShutdownCommand, false, true)
 	fmt.Println()
 }
 

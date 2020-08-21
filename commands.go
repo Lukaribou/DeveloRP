@@ -10,11 +10,13 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func pingCommand(ctx *Context) {
+// PingCommand : Voir si le bot répond
+func PingCommand(ctx *Context) {
 	ctx.Reply("T'as cru que t'allais avoir la latence ?\nhttps://tenor.com/view/ha-cheh-take-that-gif-14055512")
 }
 
-func helpCommand(ctx *Context) {
+// HelpCommand : Afficher l'aide
+func HelpCommand(ctx *Context) {
 	categories := make(map[string][]*Command, 0)
 	for _, c := range Config.CommandHandler.Commands {
 		categories[c.Category] = append(categories[c.Category], c)
@@ -57,7 +59,8 @@ func helpCommand(ctx *Context) {
 	})
 }
 
-func playerCreate(ctx *Context) {
+// PlayerCreate : Créer son joueur dans la BDD
+func PlayerCreate(ctx *Context) {
 	if ctx.DB.PlayerExist(ctx.User.ID) {
 		ctx.ReplyError("Vous possédez déjà un joueur.")
 		return
@@ -76,7 +79,8 @@ func playerCreate(ctx *Context) {
 	ctx.Reply(OKEMOJI + " **Vous êtes maintenant enregistré(e) dans ma base de données.**")
 }
 
-func displayPlayer(ctx *Context) {
+// DisplayPlayer : Afficher des informations sur son joueur
+func DisplayPlayer(ctx *Context) {
 	var target *discordgo.User
 	if len(ctx.Args) == 2 {
 		if len(ctx.Message.Mentions) != 0 {
@@ -116,7 +120,8 @@ func displayPlayer(ctx *Context) {
 	ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 }
 
-func codeCommand(ctx *Context) {
+// CodeCommand : Miner des bits (recevoir de l'argent)
+func CodeCommand(ctx *Context) {
 	pl, err := ctx.DB.GetPlayer(ctx.User.ID)
 	if err != nil {
 		ctx.ReplyError("Vous ne possédez pas de joueur.")
@@ -142,7 +147,8 @@ func codeCommand(ctx *Context) {
 	ctx.Reply(OKEMOJI + " **Votre session de code vous a fait gagner `" + strconv.Itoa(gain) + "` bits.**")
 }
 
-func execSQLCommand(ctx *Context) {
+// ExecSQLCommand : Exécuter une commande SQL
+func ExecSQLCommand(ctx *Context) {
 	request := strings.Join(ctx.Args[1:], " ")
 	msg, err := ctx.Session.ChannelMessageSend(ctx.Channel.ID, "Etes-vous sûr de vouloir exécuter la requête suivante ? ```"+request+"```")
 	if err != nil {
@@ -185,7 +191,8 @@ func editMessageError(ctx *Context, msg *discordgo.Message, err string) {
 	ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" "+err)
 }
 
-func shutdownCommand(ctx *Context) {
+// ShutdownCommand : Eteindre le bot et la BDD
+func ShutdownCommand(ctx *Context) {
 	ctx.Session.ChannelMessageSend(ctx.Channel.ID, OKEMOJI+" **Extinction du bot en cours...**")
 	fmt.Println()
 	Log("Sys", "Arrêt système demandé.")
