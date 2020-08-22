@@ -143,6 +143,26 @@ func (pl *Player) GetCurrentLanguage() *Language {
 	return l
 }
 
+// UpdateMoney : Rajoute ou enlève de l'argent
+// Mettre un nombre négatif pour retirer
+func (pl *Player) UpdateMoney(n int) error {
+	if n < 0 {
+		pl.money -= uint64(-n)
+	} else {
+		pl.money += uint64(n)
+	}
+	_, err := pl.db.sql.Exec("UPDATE users SET money = ? WHERE ID = ?",
+		pl.money, pl.ID)
+	return err
+}
+
+// AddSkill : Rajoute un skill au joueur
+func (pl *Player) AddSkill(s *Skill) error {
+	_, err := pl.db.sql.Exec("UPDATE users SET skills = ? WHERE ID = ?",
+		pl.skills+s.gain, pl.ID)
+	return err
+}
+
 // ***************
 
 // Language : Représente un langage dans la BDD

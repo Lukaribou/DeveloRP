@@ -116,7 +116,7 @@ func DisplayPlayer(ctx *Context) {
 		Author: &discordgo.MessageEmbedAuthor{Name: "Informations sur " + target.Username, IconURL: target.AvatarURL("")},
 		Fields: []*discordgo.MessageEmbedField{
 			{Name: "Bits:", Value: strconv.FormatUint(uint64(pl.money), 10), Inline: true},
-			{Name: "XP:", Value: strconv.FormatUint(uint64(pl.xp), 10) + "(Niveau:" + strconv.Itoa(pl.level) + ")", Inline: true},
+			{Name: "XP:", Value: strconv.FormatUint(uint64(pl.xp), 10) + " (Niveau:" + strconv.Itoa(pl.level) + ")", Inline: true},
 			{Name: "Date de création:", Value: TimestampSecToDate(pl.createDate), Inline: true},
 			{Name: "Langage actuel:", Value: lang.name + " (" + strconv.Itoa(lang.level) + ")", Inline: true},
 			{Name: "Compétences:", Value: listSkillsStr + fmt.Sprintf(" (%d/%d)", len(listSkills), lang.SkillsCount()), Inline: true}},
@@ -150,7 +150,7 @@ func CodeCommand(ctx *Context) {
 	gain := pl.GetTotalSkillsPoint() * pl.level
 
 	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastCode = ?, money = ? WHERE ID = ?",
-		time.Now().Unix(), pl.money+uint(gain), pl.ID); err != nil {
+		time.Now().Unix(), pl.money+uint64(gain), pl.ID); err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
 		return
 	}
@@ -231,7 +231,6 @@ func BuyCommand(ctx *Context) {
 		return
 	}
 	if len(ctx.Args) == 1 {
-		// Afficher shop
 		lang := pl.GetCurrentLanguage()
 		fields := []*discordgo.MessageEmbedField{
 			{Name: "🔰 Compétences", Value: "", Inline: true},
@@ -257,8 +256,43 @@ func BuyCommand(ctx *Context) {
 		}
 		ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 	} else if len(ctx.Args) == 2 {
-		// Acheter skill
+		asked, aErr := strconv.Atoi(ctx.Args[1])
+		if aErr != nil {
+			ctx.ReplyError("Le paramètre doit être l'ID de la compétence souhaitée. Faites `dv!shop` pour afficher les compétences et leurs ID.")
+			return
+		}
+		skill, nSkillErr := ctx.DB.GetSkill(asked)
+		if nSkillErr != nil {
+			ctx.ReplyError(nSkillErr.Error() + ".")
+			return
+		} else if !skill.special && !pl.GetCurrentLanguage().HasSkill(asked) {
+			ctx.ReplyError("Le langage `" + pl.curLangName + "` ne contient pas la compétence `" + skill.name + "`")
+			return
+		} else if pl.money < uint64(skill.cost) {
+			ctx.ReplyError("La compétence `" + skill.name + "` coûte `" + strconv.Itoa(skill.cost) + "` bits. Vous n'en possédez que `" + strconv.FormatUint(pl.money, 10) + "`.")
+			return
+		} else if pl.HasSkill(skill.gain) {
+			ctx.ReplyError("Vous possédez déjà cette compétence !")
+			return
+		}
+		err := pl.UpdateMoney(-skill.cost)
+		if err != nil {
+			ctx.ReplyError("Une erreur SQL est survenue.")
+			Log("BDD Err", "Erreur SQL BuyCommand -> UpdateMoney : %s", err)
+			return
+		}
+		err = pl.AddSkill(skill)
+		if err != nil {
+			ctx.ReplyError("Une erreur SQL est survenue. Vos bits vont vous être réstorés.")
+			Log("BDD Err", "Erreur SQL BuyCommand -> AddSkill: %s", err)
+			e := pl.UpdateMoney(skill.cost)
+			if e != nil {
+				Log("BDD Err", "Erreur BuyCommand -> Restoration argent : %s", e)
+			}
+			return
+		}
+		ctx.Reply("**Vous venez d'acquérir la compétence `" + skill.name + "` !**")
 	} else {
-		ctx.Reply("Entrez la commande sans paramètre pour afficher le shop, ou la commande + l'id de la compétence pour acheter celle-ci.")
+		ctx.Reply("Entrez la commande sans paramètre pour afficher le shop, ou la commande + l'id d'une compétence pour acheter celle-ci.")
 	}
 }
