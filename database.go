@@ -111,7 +111,7 @@ func (db *DB) GetSkills() []*Skill {
 
 	for rows.Next() {
 		var s Skill
-		err := rows.Scan(&s.ID, &s.cost, &s.gain, &s.name)
+		err := rows.Scan(&s.ID, &s.cost, &s.gain, &s.name, &s.special)
 		if err != nil {
 			panic(err)
 		}

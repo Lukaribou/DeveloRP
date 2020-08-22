@@ -177,6 +177,17 @@ func (l *Language) SkillsCount() int {
 	return count
 }
 
+// GetSkills : Renvoie un tableau avec les skills du langage
+func (l *Language) GetSkills() []*Skill {
+	skills := []*Skill{}
+	for _, skill := range l.db.GetSkills() {
+		if l.HasSkill(skill.gain) {
+			skills = append(skills, skill)
+		}
+	}
+	return skills
+}
+
 // ***************
 
 // Skill : Représente un skill dans la BDD
@@ -184,8 +195,9 @@ type Skill struct {
 	ID   int
 	cost int
 	// Représente aussi le code du skill
-	gain int
-	name string
+	gain    int
+	name    string
+	special bool
 
 	db *DB
 }
