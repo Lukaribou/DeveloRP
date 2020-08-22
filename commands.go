@@ -225,12 +225,36 @@ func ShutdownCommand(ctx *Context) {
 
 // BuyCommand : Commande pour acheter un skill / afficher le shop
 func BuyCommand(ctx *Context) {
+	pl, nPlErr := ctx.DB.GetPlayer(ctx.User.ID)
+	if nPlErr != nil {
+		ctx.ReplyError("Vous ne possédez pas de joueur.")
+		return
+	}
 	if len(ctx.Args) == 1 {
 		// Afficher shop
-		em := &discordgo.MessageEmbed{
-			Author: &discordgo.MessageEmbedAuthor{Name: "DeveloRP | Shop", IconURL: ctx.Session.State.User.AvatarURL(""), URL: Config.GitHubLink},
+		lang := pl.GetCurrentLanguage()
+		fields := []*discordgo.MessageEmbedField{
+			{Name: "🔰 Compétences", Value: "", Inline: true},
+			{Name: "🔱 Capacités spéciales", Value: "Non disponible", Inline: true}}
+
+		for _, skill := range ctx.DB.GetSkills() {
+			if !lang.HasSkill(skill.gain) {
+				continue
+			}
+			nspe := ""
+			t := " `" + strconv.Itoa(skill.ID) + "` " + skill.name + "\n"
+			if pl.HasSkill(skill.gain) {
+				nspe += OKEMOJI + t
+			} else {
+				nspe += UNLOCKEDEMOJI + t
+			}
+			fields[0].Value += nspe
 		}
 
+		em := &discordgo.MessageEmbed{
+			Author: &discordgo.MessageEmbedAuthor{Name: "DeveloRP | Shop", IconURL: ctx.Session.State.User.AvatarURL(""), URL: Config.GitHubLink},
+			Fields: fields,
+		}
 		ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 	} else if len(ctx.Args) == 2 {
 		// Acheter skill

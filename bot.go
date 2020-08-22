@@ -101,7 +101,7 @@ func registerCommands(c *CommandHandler) {
 	c.AddCommand("code", "RolePlay", nil, "Moyen de gagner des bits", CodeCommand, false, false)
 	c.AddCommand("exec-sql", "Système", []string{"sql-exec"}, "Exécute le code SQL donné", ExecSQLCommand, false, true)
 	c.AddCommand("shutdown", "Système", []string{"close", "stop", "kill"}, "Eteint le bot proprement", ShutdownCommand, false, true)
-	c.AddCommand("buy", "RolePlay", nil, "Vous ajoute le skill demandé / affiche le shop", BuyCommand, false, false)
+	c.AddCommand("buy", "RolePlay", []string{"shop"}, "Vous ajoute le skill demandé / affiche le shop", BuyCommand, false, false)
 	fmt.Println()
 }
 
