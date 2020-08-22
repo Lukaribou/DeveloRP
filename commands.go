@@ -147,7 +147,7 @@ func CodeCommand(ctx *Context) {
 		}
 	}
 
-	gain := pl.GetTotalSkillsPoint() * pl.level
+	gain := pl.GetTotalSkillsPoint() * pl.GetCurrentLanguage().ID
 
 	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastCode = ?, money = ? WHERE ID = ?",
 		time.Now().Unix(), pl.money+uint64(gain), pl.ID); err != nil {
@@ -241,7 +241,7 @@ func BuyCommand(ctx *Context) {
 
 		for _, skill := range ctx.DB.GetSkills() {
 			nspe := ""
-			t := " `" + strconv.Itoa(skill.ID) + "` " + skill.name + "\n"
+			t := fmt.Sprintf("`%d` (__%d__b) %s\n", skill.ID, skill.cost, skill.name)
 			if pl.HasSkill(skill.gain) {
 				nspe += OKEMOJI + t
 			} else if !lang.HasSkill(skill.gain) {
@@ -256,8 +256,12 @@ func BuyCommand(ctx *Context) {
 		}
 
 		em := &discordgo.MessageEmbed{
-			Author: &discordgo.MessageEmbedAuthor{Name: "DeveloRP | Shop", IconURL: ctx.Session.State.User.AvatarURL(""), URL: Config.GitHubLink},
-			Fields: fields,
+			Author:      &discordgo.MessageEmbedAuthor{Name: "DeveloRP | Shop", IconURL: ctx.Session.State.User.AvatarURL(""), URL: Config.GitHubLink},
+			Description: fmt.Sprintf("**Aide :** *%s Possédée / %s Achetable / %s Inachetable* `ID` (__Prix__ en bits) Nom", OKEMOJI, UNLOCKEDEMOJI, XEMOJI),
+			Fields:      fields,
+			Color:       lang.color,
+			Thumbnail:   &discordgo.MessageEmbedThumbnail{URL: lang.imgURL},
+			Footer:      &discordgo.MessageEmbedFooter{Text: fmt.Sprintf("Vous possédez %d bits | Langage : %s (%d)", pl.money, lang.name, lang.ID), IconURL: INFORMATIONSICON},
 		}
 		ctx.Session.ChannelMessageSendEmbed(ctx.Channel.ID, em)
 	} else if len(ctx.Args) == 2 {
@@ -280,6 +284,9 @@ func BuyCommand(ctx *Context) {
 			ctx.ReplyError("Vous possédez déjà cette compétence !")
 			return
 		}
+
+		// TODO: Faire le système avec la confirmation par réactions
+
 		err := pl.UpdateMoney(-skill.cost)
 		if err != nil {
 			ctx.ReplyError("Une erreur SQL est survenue.")
