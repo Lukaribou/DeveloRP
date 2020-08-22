@@ -145,19 +145,6 @@ func RandomInt(min, max int) int {
 	return rand.Intn(max-min+1) + min
 }
 
-// Constantes des émojis
-const (
-	OKEMOJI        = "✅"
-	XEMOJI         = "❌"
-	WARNINGEMOJI   = "⚠"
-	RIGHTARROW     = "➡"
-	TADAEMOJI      = "🎉"
-	ADMINSEMOJI    = "🚔"
-	OWNERONLYEMOJI = "🔐"
-	LOCKEDEMOJI    = "🔒"
-	UNLOCKEDEMOJI  = "🔓"
-)
-
 // GetEmojiOkOrX : Renvoie l'émoji Check si la condition == true, sinon X
 func GetEmojiOkOrX(cond bool) string {
 	if cond {

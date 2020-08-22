@@ -9,6 +9,22 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
+// Constantes des émojis
+const (
+	OKEMOJI        = "✅"
+	XEMOJI         = "❌"
+	WARNINGEMOJI   = "⚠"
+	RIGHTARROW     = "➡"
+	TADAEMOJI      = "🎉"
+	ADMINSEMOJI    = "🚔"
+	OWNERONLYEMOJI = "🔐"
+	LOCKEDEMOJI    = "🔒"
+	UNLOCKEDEMOJI  = "🔓"
+)
+
+// INFORMATIONSICON : Lien de l'icône information
+const INFORMATIONSICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/eb/Information_icon_with_gradient_background.svg/1024px-Information_icon_with_gradient_background.svg.png"
+
 // ConfigStruct : Contenu de config.json + compléments
 type ConfigStruct struct {
 	Token          string   `json:"Token"`
