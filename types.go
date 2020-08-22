@@ -163,6 +163,31 @@ func (pl *Player) AddSkill(s *Skill) error {
 	return err
 }
 
+// AddXP : Rajoute n XP à la personne et vérifie si elle doit changer de niveau
+func (pl *Player) AddXP(n uint) (bool, error) {
+	_, err := pl.db.sql.Exec("UPDATE users SET xp = ? WHERE ID = ?",
+		pl.xp+n, pl.ID)
+	if err != nil {
+		return false, err
+	}
+	return pl.Go2NextLevel()
+}
+
+// GetNextLevelXp : Retourne le nombre d'xp nécessaires pour passer au niveau suivant
+func (pl *Player) GetNextLevelXp() float64 {
+	return 2.141592 * float64(pl.level) * 1e3
+}
+
+// Go2NextLevel : Passe au niveau suivant si le nombre d'xp est suffisant
+func (pl *Player) Go2NextLevel() (bool, error) {
+	if float64(pl.xp) < pl.GetNextLevelXp() {
+		return false, nil
+	}
+	_, err := pl.db.sql.Exec("UPDATE users SET level = ? WHERE ID = ?",
+		pl.level+1, pl.ID)
+	return true, err
+}
+
 // ***************
 
 // Language : Représente un langage dans la BDD

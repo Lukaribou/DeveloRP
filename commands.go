@@ -68,7 +68,7 @@ func PlayerCreate(ctx *Context) {
 
 	id, _ := strconv.Atoi(ctx.User.ID)
 	_, err := ctx.DB.sql.Exec(
-		"INSERT INTO users (userID, money, xp, level, createDate, lastCode, curLangName, skills) VALUES (?, 0, 1, 1, ?, 0, 'Python', 1)",
+		"INSERT INTO users (userID, money, xp, level, createDate, lastCode, curLangName, skills) VALUES (?, 0, 0, 1, ?, 0, 'Python', 1)",
 		id, strconv.Itoa(int(time.Now().Unix())))
 	if err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
@@ -156,6 +156,9 @@ func CodeCommand(ctx *Context) {
 	}
 
 	ctx.Reply(OKEMOJI + " **Votre session de code vous a fait gagner `" + strconv.Itoa(gain) + "` bits.**")
+	if ne, e := pl.AddXP(100); ne && e == nil {
+		ctx.Reply(TADAEMOJI + " **Vous venez de passer au niveau suivant !**")
+	}
 }
 
 // ExecSQLCommand : Exécuter une commande SQL
@@ -237,13 +240,15 @@ func BuyCommand(ctx *Context) {
 			{Name: "🔱 Capacités spéciales", Value: "Non disponible", Inline: true}}
 
 		for _, skill := range ctx.DB.GetSkills() {
-			if !lang.HasSkill(skill.gain) {
-				continue
-			}
 			nspe := ""
 			t := " `" + strconv.Itoa(skill.ID) + "` " + skill.name + "\n"
 			if pl.HasSkill(skill.gain) {
 				nspe += OKEMOJI + t
+			} else if !lang.HasSkill(skill.gain) {
+				if skill.ID >= 15 {
+					continue
+				}
+				nspe += XEMOJI + t
 			} else {
 				nspe += UNLOCKEDEMOJI + t
 			}
@@ -291,7 +296,10 @@ func BuyCommand(ctx *Context) {
 			}
 			return
 		}
-		ctx.Reply("**Vous venez d'acquérir la compétence `" + skill.name + "` !**")
+		ctx.Reply(OKEMOJI + " **Vous venez d'acquérir la compétence `" + skill.name + "` !**")
+		if ne, e := pl.AddXP(200); ne && e == nil {
+			ctx.Reply(TADAEMOJI + " **Vous venez de passer au niveau suivant !**")
+		}
 	} else {
 		ctx.Reply("Entrez la commande sans paramètre pour afficher le shop, ou la commande + l'id d'une compétence pour acheter celle-ci.")
 	}
