@@ -100,7 +100,7 @@ func (ch *CommandHandler) AddCommand(name string,
 type Player struct {
 	ID          int
 	userID      string
-	money       uint
+	money       uint64
 	xp          uint
 	level       int
 	createDate  int64
@@ -151,7 +151,7 @@ type Language struct {
 	name   string
 	level  int
 	skills int
-	cost   int
+	cost   uint
 	imgURL string
 	color  int
 
