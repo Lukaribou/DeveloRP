@@ -19,8 +19,8 @@ import (
 var (
 	// Config : La config du bot
 	Config ConfigStruct
-	// Database : ...
-	database *DB
+
+	commandsCooldown []string
 )
 
 func main() {
@@ -33,8 +33,8 @@ func main() {
 	dg.AddHandler(ready)
 	dg.AddHandler(messageCreate)
 
-	database = NewDB()
-	defer database.sql.Close()
+	Config.DB = NewDB()
+	defer Config.DB.sql.Close()
 
 	rand.Seed(time.Now().UnixNano()) // Initialiser le rand
 	Log("Sys S", "Générateur du paquet \"rand\" initialisé.")
@@ -67,6 +67,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if !strings.HasPrefix(strings.ToLower(m.Content), Config.Prefix) {
 		return
 	}
+
+	if isInCommandsCooldown(m.Author.ID) {
+		s.ChannelMessageSend(m.ChannelID, XEMOJI+" **Le bot possède un cooldown de 1s.**")
+		return
+	}
+	commandsCooldown = append(commandsCooldown, m.Author.ID)
+	time.AfterFunc(time.Second, func() {
+		commandsCooldown = ArrayRemove(commandsCooldown, ArrayFind(commandsCooldown, m.Author.ID))
+	})
+
 	m.Content = m.Content[len(Config.Prefix):]
 
 	args := strings.Split(m.Content, " ")
@@ -90,7 +100,7 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if c, err := s.Channel(m.ChannelID); err == nil {
-		go cmd.Execute(&Context{g, c, m.Author, m.Member, m, s, database, args})
+		go cmd.Execute(&Context{g, c, m.Author, m.Member, m, s, Config.DB, args})
 	}
 }
 
@@ -123,4 +133,13 @@ func readConfig() {
 	}
 
 	registerCommands(&Config.CommandHandler)
+}
+
+func isInCommandsCooldown(id string) bool {
+	for _, i := range commandsCooldown {
+		if i == id {
+			return true
+		}
+	}
+	return false
 }

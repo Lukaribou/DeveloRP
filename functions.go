@@ -163,3 +163,21 @@ func RandomColor() int {
 	r, _ := strconv.ParseInt(s, 16, 0)
 	return int(r)
 }
+
+// ArrayFind : Retourne la position d'un élément dans le tableau
+// Retourne -1 si l'élément n'est pas dans le tableau
+func ArrayFind(a []string, x string) int {
+	for i, n := range a {
+		if x == n {
+			return i
+		}
+	}
+	return -1
+}
+
+// ArrayRemove : Retire l'élément à l'index i
+func ArrayRemove(a []string, i int) []string {
+	a[i] = a[len(a)-1]
+	// We do not need to put s[i] at the end, as it will be discarded anyway
+	return a[:len(a)-1]
+}
