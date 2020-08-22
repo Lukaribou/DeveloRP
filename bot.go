@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -117,6 +118,9 @@ func readConfig() {
 	json.Unmarshal(byteVal, &Config)
 
 	Config.Version = "v0.0.1"
+	if runtime.GOOS == "windows" {
+		Config.Prefix = "dv;"
+	}
 
 	registerCommands(&Config.CommandHandler)
 }
