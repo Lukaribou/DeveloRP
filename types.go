@@ -11,13 +11,13 @@ import (
 
 // ConfigStruct : Contenu de config.json + compléments
 type ConfigStruct struct {
-	Token          string
-	OwnerID        string
-	GitHubLink     string
-	InviteLink     string
-	Prefix         string
-	DbPassword     string
-	SQLPort        []string
+	Token          string   `json:"Token"`
+	OwnerID        string   `json:"OwnerID"`
+	GitHubLink     string   `json:"GitHubLink"`
+	InviteLink     string   `json:"InviteLink"`
+	Prefix         string   `json:"Prefix"`
+	DbPassword     string   `json:"DbPassword"`
+	SQLPort        []string `json:"SQLPort"`
 	Version        string
 	CommandHandler CommandHandler
 }
