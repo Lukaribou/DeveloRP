@@ -57,7 +57,7 @@ func (db *DB) PlayerExist(userID string) bool {
 // GetPlayer : Renvoie l'utilisateur si il existe, une erreur sinon
 func (db *DB) GetPlayer(userID string) (*Player, error) {
 	if !db.PlayerExist(userID) {
-		return nil, errors.New("L'utilisateur " + userID + " n'existe pas dans la base de données.")
+		return &Player{}, errors.New("L'utilisateur " + userID + " n'existe pas dans la base de données.")
 	}
 	var pl Player
 	db.sql.QueryRow("SELECT * FROM users WHERE userID = ?", userID).Scan(
@@ -83,7 +83,7 @@ func (db *DB) ExistLanguage(name string) bool {
 // GetLanguage : Prends le langage correspondant à l'ID donné
 func (db *DB) GetLanguage(langName string) (*Language, error) {
 	if !db.ExecExistWithQuery("SELECT ID FROM langs WHERE name = ?", langName) {
-		return nil, errors.New("Le '" + langName + "' ne correspond à aucun langage.")
+		return &Language{}, errors.New("Le '" + langName + "' ne correspond à aucun langage de ma base de données.")
 	}
 	var l Language
 	db.sql.QueryRow("SELECT * FROM langs WHERE name = ?", langName).Scan(
@@ -119,4 +119,14 @@ func (db *DB) GetSkills() []*Skill {
 		skills = append(skills, &s)
 	}
 	return skills
+}
+
+// GetSkill : Renvoie le skill associé à l'ID
+func (db *DB) GetSkill(ID int) (*Skill, error) {
+	for _, skill := range db.GetSkills() {
+		if skill.ID == ID {
+			return skill, nil
+		}
+	}
+	return &Skill{}, errors.New("L'ID donné ne correspond à aucune compétence")
 }
