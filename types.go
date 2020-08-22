@@ -35,6 +35,7 @@ type ConfigStruct struct {
 	DbPassword     string   `json:"DbPassword"`
 	SQLPort        []string `json:"SQLPort"`
 	Version        string
+	DB             *DB
 	CommandHandler CommandHandler
 }
 
