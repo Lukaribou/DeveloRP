@@ -112,6 +112,7 @@ func guildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
 	Log("Système | Avertissement", txt)
 	LogFile("Système | Avertissement", "", txt)
 }
+
 func guildDelete(s *discordgo.Session, g *discordgo.GuildDelete) {
 	owner, _ := s.User(g.OwnerID)
 	txt := fmt.Sprintf("Serveur quitté : %s (Owner : %s (ID: %s)) avec %d membres.", g.Name, owner.Username+"#"+owner.Discriminator, g.OwnerID, len(g.Members))
