@@ -187,22 +187,21 @@ func ExecSQLCommand(ctx *Context) {
 				msgText += fmt.Sprintf("\nColonnes affectées: `%d`", ra)
 			}
 			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, msgText)
-		}, OnError: func(err error, wCtx *WatchContext) {
-			editMessageError(ctx, msg, "**Une erreur est survenue.**")
-			Log("Err", "Erreur réaction collector : %s", err.Error())
-		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
+		}, OnError: func(err error, _ *WatchContext) {
+			editMessageError(ctx, msg, err.Error())
+		}, LimitReaction: 1, Expiration: 3e4, FilterUser: true,
 	}, &WatchOption{
 		Emoji: XEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
 			ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Requête SQL avortée.**")
-		}, OnError: func(err error, wCtx *WatchContext) {
-			editMessageError(ctx, msg, "**Une erreur est survenue.**")
-			Log("Err", "Erreur réaction collector : %s", err.Error())
-		}, LimitReaction: 1, Expiration: 3e4, Filter: func(_ *Context) bool { return true },
+		}, OnError: func(err error, _ *WatchContext) {
+			editMessageError(ctx, msg, err.Error())
+		}, LimitReaction: 1, Expiration: 3e4, FilterUser: true,
 	})
 }
 
 func editMessageError(ctx *Context, msg *discordgo.Message, err string) {
-	ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" "+err)
+	ctx.Session.ChannelMessageEdit(msg.ChannelID, msg.ID, XEMOJI+" **Une erreur est survenue :** "+err)
+	Log("Err", "Erreur réaction collector : %s", err)
 }
 
 // ShutdownCommand : Eteindre le bot et la BDD
@@ -285,28 +284,44 @@ func BuyCommand(ctx *Context) {
 			return
 		}
 
-		// TODO: Faire le système avec la confirmation par réactions
-
-		err := pl.UpdateMoney(-skill.cost)
-		if err != nil {
-			ctx.ReplyError("Une erreur SQL est survenue.")
-			Log("BDD Err", "Erreur SQL BuyCommand -> UpdateMoney : %s", err)
+		msg, mErr := ctx.Session.ChannelMessageSend(ctx.Channel.ID, "La compétence `"+skill.name+"` coûte `"+strconv.Itoa(skill.cost)+"`. Etes-vous sûr(e) de vouloir l'acheter ?")
+		if mErr != nil {
+			Log("Err", "Erreur BuyCommand 2 args : %s", mErr.Error())
 			return
 		}
-		err = pl.AddSkill(skill)
-		if err != nil {
-			ctx.ReplyError("Une erreur SQL est survenue. Vos bits vont vous être réstorés.")
-			Log("BDD Err", "Erreur SQL BuyCommand -> AddSkill: %s", err)
-			e := pl.UpdateMoney(skill.cost)
-			if e != nil {
-				Log("BDD Err", "Erreur BuyCommand -> Restoration argent : %s", e)
-			}
-			return
-		}
-		ctx.Reply(OKEMOJI + " **Vous venez d'acquérir la compétence `" + skill.name + "` !**")
-		if ne, e := pl.AddXP(200); ne && e == nil {
-			ctx.Reply(TADAEMOJI + " **Vous venez de passer au niveau suivant !**")
-		}
+		watcher := NewWatcher(msg, ctx.Session, 500, ctx, nil)
+		watcher.Add(&WatchOption{
+			Emoji: OKEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
+				err := pl.UpdateMoney(-skill.cost)
+				if err != nil {
+					ctx.ReplyError("Une erreur SQL est survenue.")
+					Log("BDD Err", "Erreur SQL BuyCommand -> UpdateMoney : %s", err)
+					return
+				}
+				err = pl.AddSkill(skill)
+				if err != nil {
+					ctx.ReplyError("Une erreur SQL est survenue. Vos bits vont vous être réstorés.")
+					Log("BDD Err", "Erreur SQL BuyCommand -> AddSkill: %s", err)
+					e := pl.UpdateMoney(skill.cost)
+					if e != nil {
+						Log("BDD Err", "Erreur BuyCommand -> Restoration argent : %s", e)
+					}
+					return
+				}
+				ctx.Session.ChannelMessageEdit(ctx.Channel.ID, msg.ID, OKEMOJI+" **Vous venez d'acquérir la compétence `"+skill.name+"` !**")
+				if ne, e := pl.AddXP(200); ne && e == nil {
+					ctx.Reply(TADAEMOJI + " **Vous venez de passer au niveau suivant !**")
+				}
+			}, OnError: func(err error, wCtx *WatchContext) {
+				editMessageError(ctx, msg, err.Error())
+			}, LimitReaction: 1, Expiration: 3e4, FilterUser: true,
+		}, &WatchOption{
+			Emoji: XEMOJI, OnSuccess: func(_ *discordgo.User, _ *WatchContext) {
+				ctx.Session.ChannelMessageEdit(ctx.Channel.ID, msg.ID, XEMOJI+" **Vous avez annulé votre action.**")
+			}, OnError: func(err error, _ *WatchContext) {
+				editMessageError(ctx, msg, err.Error())
+			}, LimitReaction: 1, Expiration: 3e4, FilterUser: true,
+		})
 	} else {
 		ctx.Reply("Entrez la commande sans paramètre pour afficher le shop, ou la commande + l'id d'une compétence pour acheter celle-ci.")
 	}
