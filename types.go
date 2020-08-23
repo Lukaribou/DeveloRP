@@ -284,7 +284,7 @@ type (
 		OnError       func(err error, wCtx *WatchContext)
 		LimitReaction int
 		Expiration    time.Duration
-		Filter        func(ctx *Context) bool
+		FilterUser    bool
 	}
 )
 
@@ -327,7 +327,7 @@ func (ctx *WatchContext) watcher(opt *WatchOption) {
 			if user, err := watchReactionPoll(ctx.Session, ctx.Message.ChannelID, ctx.Message.ID, opt); err != nil {
 				opt.OnError(err, ctx)
 				return
-			} else if (discordgo.User{}) != *user && opt.Filter(ctx.Context) {
+			} else if (discordgo.User{}) != *user && (!opt.FilterUser || user.ID == ctx.Context.User.ID) {
 				opt.OnSuccess(user, ctx)
 			}
 		}
