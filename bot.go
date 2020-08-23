@@ -107,15 +107,16 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 }
 
 func guildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
-	owner, _ := s.User(g.OwnerID)
-	txt := fmt.Sprintf("Serveur rejoint : %s (Owner : %s (ID: %s)) avec %d membres.", g.Name, owner.Username+"#"+owner.Discriminator, g.OwnerID, g.MemberCount)
-	Log("Système | Avertissement", txt)
-	LogFile("Système | Avertissement", "", txt)
+	if t, _ := g.JoinedAt.Parse(); t.Add(time.Second * 5).After(time.Now()) {
+		owner, _ := s.User(g.OwnerID)
+		txt := fmt.Sprintf("Serveur rejoint ! %s (ID: %s) (Owner : %s (ID: %s)) avec %d membres.", g.Name, g.ID, owner.Username+"#"+owner.Discriminator, g.OwnerID, g.MemberCount)
+		Log("Système | Avertissement", txt)
+		LogFile("Système | Avertissement", "", txt)
+	}
 }
 
 func guildDelete(s *discordgo.Session, g *discordgo.GuildDelete) {
-	owner, _ := s.User(g.OwnerID)
-	txt := fmt.Sprintf("Serveur quitté : %s (Owner : %s (ID: %s)) avec %d membres.", g.Name, owner.Username+"#"+owner.Discriminator, g.OwnerID, len(g.Members))
+	txt := fmt.Sprintf("Serveur quitté ! ID %s.", g.ID)
 	Log("Système | Avertissement", txt)
 	LogFile("Système | Avertissement", "", txt)
 }
