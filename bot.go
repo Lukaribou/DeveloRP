@@ -32,6 +32,8 @@ func main() {
 
 	dg.AddHandler(ready)
 	dg.AddHandler(messageCreate)
+	dg.AddHandler(guildCreate)
+	dg.AddHandler(guildDelete)
 
 	Config.DB = NewDB()
 	defer Config.DB.sql.Close()
@@ -102,6 +104,19 @@ func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if c, err := s.Channel(m.ChannelID); err == nil {
 		go cmd.Execute(&Context{g, c, m.Author, m.Member, m, s, Config.DB, args})
 	}
+}
+
+func guildCreate(s *discordgo.Session, g *discordgo.GuildCreate) {
+	owner, _ := s.User(g.OwnerID)
+	txt := fmt.Sprintf("Serveur rejoint : %s (Owner : %s (ID: %s)) avec %d membres.", g.Name, owner.Username+"#"+owner.Discriminator, g.OwnerID, g.MemberCount)
+	Log("Système | Avertissement", txt)
+	LogFile("Système | Avertissement", "", txt)
+}
+func guildDelete(s *discordgo.Session, g *discordgo.GuildDelete) {
+	owner, _ := s.User(g.OwnerID)
+	txt := fmt.Sprintf("Serveur quitté : %s (Owner : %s (ID: %s)) avec %d membres.", g.Name, owner.Username+"#"+owner.Discriminator, g.OwnerID, len(g.Members))
+	Log("Système | Avertissement", txt)
+	LogFile("Système | Avertissement", "", txt)
 }
 
 func registerCommands(c *CommandHandler) {
