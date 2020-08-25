@@ -68,7 +68,7 @@ func PlayerCreate(ctx *Context) {
 
 	id, _ := strconv.Atoi(ctx.User.ID)
 	_, err := ctx.DB.sql.Exec(
-		"INSERT INTO users (userID, money, xp, level, createDate, lastCode, curLangName, skills) VALUES (?, 0, 0, 1, ?, 0, 'Python', 1)",
+		"INSERT INTO users (userID, createDate) VALUES (?, ?)",
 		id, strconv.Itoa(int(time.Now().Unix())))
 	if err != nil {
 		ctx.ReplyError("Une erreur SQL est survenue.")
@@ -325,4 +325,9 @@ func BuyCommand(ctx *Context) {
 	} else {
 		ctx.Reply("Entrez la commande sans paramètre pour afficher le shop, ou la commande + l'id d'une compétence pour acheter celle-ci.")
 	}
+}
+
+// DailyCommand : Commande qui rapporte un peu toutes les 24h
+func DailyCommand(ctx *Context) {
+
 }
