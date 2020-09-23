@@ -141,7 +141,7 @@ func CodeCommand(ctx *Context) {
 
 	if pl.lastCode != 0 {
 		last := time.Unix(pl.lastCode, 0)
-		if last.Add(time.Hour).After(time.Now()) { // => Si ça fait moins de 6h
+		if last.Add(time.Hour).After(time.Now()) { // => Si ça fait moins de 1h
 			ctx.ReplyError("Vous devez attendre *" + TimeFormatFr(last.Add(time.Hour)) + "* avant la prochaine session de code.")
 			return
 		}
@@ -329,5 +329,30 @@ func BuyCommand(ctx *Context) {
 
 // DailyCommand : Commande qui rapporte un peu toutes les 24h
 func DailyCommand(ctx *Context) {
+	pl, err := ctx.DB.GetPlayer(ctx.User.ID)
+	if err != nil {
+		ctx.ReplyError("Vous ne possédez pas de joueur.")
+		return
+	}
 
+	if pl.lastDaily != 0 {
+		last := time.Unix(pl.lastDaily, 0)
+		if last.Add(time.Hour*23 + time.Minute*30).After(time.Now()) { // => Si ça fait moins de 23h30
+			ctx.ReplyError("Vous devez attendre *" + TimeFormatFr(last.Add(time.Hour)) + "* avant le prochain daily.")
+			return
+		}
+	}
+
+	gain := pl.level * 10
+
+	if _, err := ctx.DB.sql.Exec("UPDATE users SET lastDaily = ?, money = ? WHERE ID = ?",
+		time.Now().Unix(), pl.money+uint64(gain), pl.ID); err != nil {
+		ctx.ReplyError("Une erreur SQL est survenue.")
+		return
+	}
+
+	ctx.Reply(OKEMOJI + " **Votre venez d'être crédité(e) de `" + strconv.Itoa(gain) + "` bits.**")
+	if ne, e := pl.AddXP(500); ne && e == nil {
+		ctx.Reply(TADAEMOJI + " **Vous venez de passer au niveau suivant !**")
+	}
 }

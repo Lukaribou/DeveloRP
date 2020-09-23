@@ -123,6 +123,7 @@ type Player struct {
 	createDate  int64
 	lastCode    int64
 	curLangName string
+	lastDaily   int64
 	skills      int
 
 	db *DB
